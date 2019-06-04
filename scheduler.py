@@ -36,21 +36,21 @@ def main():
     """Main entry point for the script."""
 
     # for testing
-    # member_avails = [member_1, member_2]
-    member_avails = [member_1]
+    member_avails = [member_1, member_2]
+    # member_avails = [member_1]
 
     schedule = []
 
-    extr_avails = []
+    all_extr_avails = []
     for member_av in member_avails:
-        extr_avails.append(extract_avails(member_av))
+        all_extr_avails.append(extract_avails(member_av))
 
-    generate_schedule(extr_avails)
+    generate_schedule(all_extr_avails)
 
     pass
 
 def extract_avails(avails):
-    """ stuff """
+    """ Maybe changed later to drop down menus/have two options """
     extracted_avails = [None, None, None, None, None, None, None, None]
 
     for i in range(len(avails)):
@@ -92,14 +92,50 @@ def extract_avails(avails):
 
 def generate_schedule(extr_avails):
     # move this into extracted_avails eventually
-    sun = None
-    mon = None
-    tues = None
-    wed = None
-    thurs = None
-    fri = None
-    sat = None
+    schedule = [
+        None, # sun
+        None, # mon
+        None, # tues
+        None, # wed
+        None, # thurs
+        None, # fri
+        None, # sat
+        None, # ignore for now, this is for exceptions
+        ]
+
     print("wee woop schedule here u go")
+
+    # first pass: set schedule as first elem of extr avails
+    for avail_idx in range(len(extr_avails[0])):
+        avail = extr_avails[0][avail_idx]
+        schedule[avail_idx] = avail
+
+    # other passes: check conflict, then change
+    for member_avail in extr_avails:
+        mod_member_avail = [ None, None, None, None, None, None, None, None ]
+
+        # set up
+        for day_idx in range(len(member_avail)-1):  # ignoring exceptions
+            if member_avail[day_idx] is None:       # set to 9am - 11pm for simplicity
+                print("None is now 9am-11pm")
+                mod_member_avail[day_idx] = [ datetime.strptime("9:00am", "%I:%M%p").time(), datetime.strptime("11:00pm", "%I:%M%p").time() ]
+            else:
+                mod_member_avail[day_idx] = member_avail[day_idx]
+
+        # print(mod_member_avail)
+        # exit()
+
+        # case 1: schedule is more free than member (schedule ST is earlier than member ST, and schedule ET is later than member ET)
+        look into method comparing earlier/later (datetime objects)
+
+        # case 2: schedule earlier, still overlap
+        # case 3: schedule later, still overlap
+        # case 4: no overlap
+
+
+
+
+    print(schedule)
 
 if __name__ == '__main__':
     sys.exit(main())
