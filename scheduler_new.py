@@ -32,22 +32,21 @@ class schedule:
         # sched_size = 4 * t_hr + num_q_hr
 
         # using t_hr and min, generate array size
-        self.arr = [[True for x in range(sched_size)] for y in range(7)]
+        self.sched = [[True for x in range(sched_size)] for y in range(7)]
 
     def mod_sched(self):
         # do we even need this method
         self.arr.append(self.start + self.end)
         print(self.arr)
 
-# helper for extracting avails --> datetime time objects
-# example str input: "10:30-21:00"
+# HELPER for extracting avails --> datetime time objects
+# Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
 def convert_to_datetime(str):
-    str = "10:30-21:00"
+    # str = "10:30-21:00"
     start = 0
     end = 0
 
-    try:
-        # create this avail thing that will be split into start and end
+    try:       # create this avail thing that will be split into start and end
         avail = str.lower()
         # could remove whitespace too ?? # TODO:
     except:
@@ -55,12 +54,16 @@ def convert_to_datetime(str):
 
     # Case: if it's the word free then set to True
     if avail == 'free':
-        start, end = True
+        start = True
+        end = True
     elif avail is None:
-        start, end = False
-    else:
-        # it's a time, so further processing gotta be done
-        times = avail.split("-")
+        start = False
+        end = False
+    else:                                               # It's a time, so further processing gotta be done
+        avail.replace(" ", "")                          # Removing whitespace
+        times = avail.split("-")                        # Split into start and end time
+        times = [t.replace(" ", "") for t in times]     # Safety whitespace
+
         print("splitting:", end=" ")
         print(times)
         # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
@@ -76,45 +79,93 @@ def convert_to_datetime(str):
 
     return start, end
 
-# Helper to convert whatever input time is in --> datetime
-# examples: 6pm, 6:00, 6 (how to handle this one?)
+# HELPER to convert whatever input time is in --> datetime time object
+# Text parsing in a bad way that tries to predict what members input
+# Ex: 6pm, 6:00, 6
 def convert(time):
     # 6 --> make assumptions --> pass through strptime
-    if x:   #numeric only
-        do stuff
-        return dt_time
-    # TODO: regex stuff
+    if time.isdigit():   # checks if numeric only: "6:00".isdigit() --> false
+        try:
+            time = int(time)
+            if time < 9:    time = str(time) + ":00pm"
+            else:           time = str(time) + ":00am"
+            dt_time = datetime.datetime.strptime(time, "%I:%M%p").time()
+            return dt_time
+        except Exception:
+            return False
 
     # 6pm --> fix so it's 6:00pm --> pass through strptime
-    if ":" not in time:
+    elif ":" not in time:
         apm = time[-2:]             # get am or pm
         t = time[:-2]               # get time (ex. 6)
         time = t + ":00" +  apm     # fix to add :00
         dt_time = datetime.datetime.strptime(time, "%I:%M%p").time()
         return dt_time
 
-    # 6:00
-    elif:
-        # TODO: regex stuff
+    # 6:00, 12:00
+    elif ((":" in time) and (len(time) < 6)):
         dt_time = datetime.datetime.strptime(time, '%H:%M').time()
         return dt_time
 
     else:
         return False
 
-def member_schedule(master, avails):
-    # Set array/schedule size to same as master
-    m_sched = schedule(master.start, master.end)
+# HELPER for changing member schedule
+def modify_schedule(m_sched, dt_start, dt_end, i):
+    m_sched_mod = m_sched
 
-    # Modify array with avails
-    for i in range(len(m_sched.arr)):
+    for s in range(len(m_sched_mod.sched[i])):          # Set all to false
+        m_sched_mod.sched[i][s] = False
+    # print(m_sched_mod.sched[i])
+
+    # print(m_sched_mod.start)
+    # print(m_sched_mod.end)
+    # print(i)        # --> 0 is sunday
+
+    # Get difference between start of master schedule and start of member avail (on day i)
+    t_hr_start = dt_start.hour - m_sched_mod.start.hour
+    t_min_start = dt_start.minute - m_sched_mod.start.minute
+    num_halfhr_start = int(t_min_start/30)
+    t_hr_end = dt_end.hour - m_sched_mod.start.hour
+    t_min_end = dt_end.minute - m_sched_mod.start.minute
+    num_halfhr_end = int(t_min_end/30)
+
+    # Turn the difference into num "slots" (to be used in the schedule list)
+    # print("diff: ", end="")
+    # print(str(t_hr_start) + ":" + str(t_min_start))
+    # print(str(t_hr_end) + ":" + str(t_min_end))
+    num_slot_start = t_hr_start * 2 + num_halfhr_start
+    num_slot_end = t_hr_end * 2 + num_halfhr_end
+
+    print("num slots start: " + str(num_slot_start))
+    print("num slots end: " + str(num_slot_end))
+
+    # TODO: pretty sure this logic doesn't work but i need to visualize it first
+    for j in range(num_slot_end-num_slot_start)[num_slot_start:]:
+        m_sched_mod.sched[i][j] = True
+
+    print(m_sched_mod.sched[i])
+
+    return m_sched_mod
+
+def member_schedule(master, avails):
+    m_sched = schedule(master.start, master.end)    # Set array/schedule size to same as master
+
+    for i in range(len(m_sched.sched)):               # Modify array with avails
         day_avail = avails[i]
+        print("day avail: ", end="")
         print(day_avail)
 
         dt_start, dt_end = convert_to_datetime(day_avail)
         print(str(dt_start) + ", " + str(dt_end))
 
-    # Modify to add exceptions
+        m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
+        print("---")
+        exit(1)
+
+
+
+    # TODO: Modify to add exceptions
     print(avails[7])
 
     return m_sched
@@ -125,9 +176,9 @@ member_1 = [
     "10:30-21:00",
     "Free",
     "FREE",
-    "free",
-    "free",
-    "free",
+    "10:30-21:00",
+    "6- 8",
+    "6-8",
     "1pm-9pm",
     None ]
 
@@ -167,7 +218,7 @@ def main():
     print(member1.start)
     print(member1.end)
     # pprint.pprint(member1.arr)
-    print(len(member1.arr[0]))
+    print(len(member1.sched[0]))
 
     pass
 
