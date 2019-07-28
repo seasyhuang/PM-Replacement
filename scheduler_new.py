@@ -110,12 +110,50 @@ def convert(time):
     else:
         return False
 
+def visualize(schedule, day):
+    st_t = schedule.start
+    e_t = schedule.end
+    arr2d = schedule.sched
+
+    print(st_t, end=" - ")
+    print(e_t)
+    print("-")
+
+    diff_hr = e_t.hour - st_t.hour
+    diff_min = e_t.minute - st_t.minute
+    diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
+
+    for i in range(diff):
+        # convert to datetime.datetime object, add timedelta, convert back
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+        diff_i = datetime.timedelta(minutes=30*i)
+        comb = dtdt + diff_i
+        comb = comb.time()
+        print(comb.strftime("%H:%M"), end="\t|")           # prints without seconds
+
+        if arr2d[day][i] is True:
+            print(" |")
+        if arr2d[day][i] is False:
+            print("x|")
+
+    exit(1)
+
+
+
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_start, dt_end, i):
     m_sched_mod = m_sched
 
+    if ((dt_start is True) and (dt_end is True)):
+        for s in range(len(m_sched_mod.sched[i])):          # Set all to True
+            m_sched_mod.sched[i][s] = True
+        return m_sched_mod
+
     for s in range(len(m_sched_mod.sched[i])):          # Set all to false
         m_sched_mod.sched[i][s] = False
+
+    if ((dt_start is False) and (dt_end is False)):
+        return m_sched_mod
     # print(m_sched_mod.sched[i])
 
     # print(m_sched_mod.start)
@@ -161,8 +199,6 @@ def member_schedule(master, avails):
 
         m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
         print("---")
-        exit(1)
-
 
 
     # TODO: Modify to add exceptions
@@ -180,6 +216,14 @@ member_1 = [
     "6- 8",
     "6-8",
     "1pm-9pm",
+
+    # "10:30-21:00",
+    # "10:30-21:00",
+    # "10:30-21:00",
+    # "10:30-21:00",
+    # "10:30-21:00",
+    # "10:30-21:00",
+    # "10:30-21:00",
     None ]
 
 member_2 = [
@@ -213,6 +257,7 @@ def main():
     ex_end = '16:30'    # end 4:30pm
 
     member1 = member_schedule(master, member_1)
+    visualize(member1, 6)
 
     ###### Testing ######
     print(member1.start)
