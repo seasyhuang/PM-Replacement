@@ -123,8 +123,7 @@ def visualize(schedule, day):
     diff_min = e_t.minute - st_t.minute
     diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
 
-    for i in range(diff):
-        # convert to datetime.datetime object, add timedelta, convert back
+    for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
         dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
         diff_i = datetime.timedelta(minutes=30*i)
         comb = dtdt + diff_i
@@ -133,12 +132,9 @@ def visualize(schedule, day):
 
         if arr2d[day][i] is True:
             print(" |")
-        if arr2d[day][i] is False:
+        else:
+        # if arr2d[day][i] is False:
             print("x|")
-
-    exit(1)
-
-
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_start, dt_end, i):
@@ -179,7 +175,8 @@ def modify_schedule(m_sched, dt_start, dt_end, i):
     print("num slots end: " + str(num_slot_end))
 
     # TODO: pretty sure this logic doesn't work but i need to visualize it first
-    for j in range(num_slot_end-num_slot_start)[num_slot_start:]:
+    for j in range(num_slot_end)[num_slot_start:]:
+        print(j)
         m_sched_mod.sched[i][j] = True
 
     print(m_sched_mod.sched[i])
@@ -187,14 +184,14 @@ def modify_schedule(m_sched, dt_start, dt_end, i):
     return m_sched_mod
 
 def member_schedule(master, avails):
-    m_sched = schedule(master.start, master.end)    # Set array/schedule size to same as master
+    m_sched = schedule(master.start, master.end)        # Set array/schedule size to same as master
 
-    for i in range(len(m_sched.sched)):               # Modify array with avails
+    for i in range(len(m_sched.sched)):                 # Modify array with avails
         day_avail = avails[i]
         print("day avail: ", end="")
         print(day_avail)
 
-        dt_start, dt_end = convert_to_datetime(day_avail)
+        dt_start, dt_end = convert_to_datetime(day_avail)   # Where dt_start and end are the avails members put in
         print(str(dt_start) + ", " + str(dt_end))
 
         m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
@@ -211,11 +208,11 @@ def member_schedule(master, avails):
 member_1 = [
     "10:30-21:00",
     "Free",
-    "FREE",
     "10:30-21:00",
     "6- 8",
     "6-8",
-    "1pm-9pm",
+    "1pm-6pm",
+    "1pm-6:00pm",       # test case: there is something wrong with "6:00pm"
 
     # "10:30-21:00",
     # "10:30-21:00",
