@@ -94,6 +94,11 @@ def convert(time):
         except Exception:
             return False
 
+    # 6:00pm --> pass through strptime
+    elif len(time) > 5:
+        dt_time = datetime.datetime.strptime(time, "%I:%M%p").time()
+        return dt_time
+
     # 6pm --> fix so it's 6:00pm --> pass through strptime
     elif ":" not in time:
         apm = time[-2:]             # get am or pm
