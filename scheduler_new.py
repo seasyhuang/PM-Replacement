@@ -115,11 +115,13 @@ def convert(time):
     else:
         return False
 
-def visualize(schedule, day):
+def visualize_day(schedule, day):
     st_t = schedule.start
     e_t = schedule.end
     arr2d = schedule.sched
 
+    # Prints an informative banner at the top of the visualization
+    print("######### VISUALIZING " + str(day) + " #########")       # todo: there's a strptime method that converts int to day of week
     print(st_t, end=" - ")
     print(e_t)
     print("-")
@@ -140,6 +142,44 @@ def visualize(schedule, day):
         else:
         # if arr2d[day][i] is False:
             print("x|")
+
+def visualize_week(schedule):
+    st_t = schedule.start
+    e_t = schedule.end
+    arr2d = schedule.sched
+
+    # Prints an informative banner at the top of the visualization
+    print("######### VISUALIZING WEEK #########")       # todo: there's a strptime method that converts int to day of week
+    print(st_t, end=" - ")
+    print(e_t)
+    print("-")
+
+    diff_hr = e_t.hour - st_t.hour
+    diff_min = e_t.minute - st_t.minute
+    diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
+
+    # this one gives the schedules (sun -> sat)
+    for day_sched in schedule.sched:
+        print(len(day_sched))
+
+        # visualize sched for every day but only keep one time bar on the left
+
+    # this one gives the days of the week
+    for day in range(len(schedule.sched)):
+        print(day)
+
+    # for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
+    #     dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+    #     diff_i = datetime.timedelta(minutes=30*i)
+    #     comb = dtdt + diff_i
+    #     comb = comb.time()
+    #     print(comb.strftime("%H:%M"), end="\t|")           # prints without seconds
+    #
+    #     if arr2d[day][i] is True:
+    #         print(" |")
+    #     else:
+    #     # if arr2d[day][i] is False:
+    #         print("x|")
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_start, dt_end, i):
@@ -253,19 +293,20 @@ member_3 = [
 
 def main():
     """ Create grid/master schedule """
-    master = schedule('9:00', '21:00')
+    master = schedule('9:00', '22:00')
 
     ex_start = '10:00'  # start at 10am
     ex_end = '16:30'    # end 4:30pm
 
     member1 = member_schedule(master, member_1)
-    visualize(member1, 6)
 
     ###### Testing ######
     print(member1.start)
     print(member1.end)
-    # pprint.pprint(member1.arr)
     print(len(member1.sched[0]))
+
+    # visualize_day(member1, 5)     # 0 = sunday
+    visualize_week(member1)
 
     pass
 
