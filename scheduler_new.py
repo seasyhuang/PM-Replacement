@@ -158,28 +158,42 @@ def visualize_week(schedule):
     diff_min = e_t.minute - st_t.minute
     diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
 
-    # this one gives the schedules (sun -> sat)
-    for day_sched in schedule.sched:
-        print(len(day_sched))
+    # create toprint array that stores time (0) and schedules (1->7)
+    # not great because index is now off by 1  ¯\_(ツ)_/¯
+    toprint = [ [],
+                [], [], [], [], [], [], [] ]
+    toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
 
-        # visualize sched for every day but only keep one time bar on the left
+    # Setting up the time on the very left as toprint[0]
+    for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+        diff_i = datetime.timedelta(minutes=30*i)
+        comb = dtdt + diff_i
+        comb = comb.time()
+        toprint[0].append(comb.strftime("%H:%M"))           # appends without seconds
 
-    # this one gives the days of the week
-    for day in range(len(schedule.sched)):
-        print(day)
+    # Saving all the stuff in arr2d into toprint (since we already have the information)
+    for day_i in range(len(arr2d)):
+        # Ex: sunday in arr2d is 0, save at 0+1 in toprint
+        toprint[day_i+1] = arr2d[day_i]
 
-    # for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
-    #     dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
-    #     diff_i = datetime.timedelta(minutes=30*i)
-    #     comb = dtdt + diff_i
-    #     comb = comb.time()
-    #     print(comb.strftime("%H:%M"), end="\t|")           # prints without seconds
-    #
-    #     if arr2d[day][i] is True:
-    #         print(" |")
-    #     else:
-    #     # if arr2d[day][i] is False:
-    #         print("x|")
+    # Right column of times:
+    toprint.append(toprint[0])
+
+    # The actual printing part of this method
+    # HEADER:
+    print("#####", end=" ")
+    for d in toprintdays: print("(" + d + ") ", end="")
+    print("#####")
+    # SCHEDULE:
+    for i in range(len(toprint[0])):
+        for j in range(len(toprint)):
+            temp = toprint[j][i]
+            if temp is True: temp = "   "
+            elif temp is False: temp = " x "
+            else: temp = str(toprint[j][i]) #   + "\t"
+            print(temp, end=" ")
+        print()
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_start, dt_end, i):
