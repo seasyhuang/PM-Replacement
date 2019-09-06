@@ -64,8 +64,8 @@ def convert_to_datetime(str):
         times = avail.split("-")                        # Split into start and end time
         times = [t.replace(" ", "") for t in times]     # Safety whitespace
 
-        print("splitting:", end=" ")
-        print(times)
+        # print("splitting:", end=" ")
+        # print(times)
         # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
 
         dt_av = []
@@ -230,15 +230,15 @@ def modify_schedule(m_sched, dt_start, dt_end, i):
     num_slot_start = t_hr_start * 2 + num_halfhr_start
     num_slot_end = t_hr_end * 2 + num_halfhr_end
 
-    print("num slots start: " + str(num_slot_start))
-    print("num slots end: " + str(num_slot_end))
+    # print("num slots start: " + str(num_slot_start))
+    # print("num slots end: " + str(num_slot_end))
 
     # TODO: pretty sure this logic doesn't work but i need to visualize it first
     for j in range(num_slot_end)[num_slot_start:]:
-        print(j)
+        # print(j)
         m_sched_mod.sched[i][j] = True
 
-    print(m_sched_mod.sched[i])
+    # print(m_sched_mod.sched[i])
 
     return m_sched_mod
 
@@ -247,20 +247,36 @@ def member_schedule(master, avails):
 
     for i in range(len(m_sched.sched)):                 # Modify array with avails
         day_avail = avails[i]
-        print("day avail: ", end="")
-        print(day_avail)
+        # print("day avail: ", end="")
+        # print(day_avail)
 
         dt_start, dt_end = convert_to_datetime(day_avail)   # Where dt_start and end are the avails members put in
-        print(str(dt_start) + ", " + str(dt_end))
+        # print(str(dt_start) + ", " + str(dt_end))
 
         m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
-        print("---")
+        # print("---")
 
 
     # TODO: Modify to add exceptions
     print(avails[7])
 
     return m_sched
+
+# This method generates the practice schedule
+# IMPLEMENTATION 1: return times all members free
+# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free)
+# -- idea for option: specify how many practices needed
+def generate_practice_times(master, members):
+    print("Generating practice times...")
+    #  members - list of all memebrs (for member in members, do:
+    #  member1 = member_schedule(master, member_1)
+
+    # TODO: change member into an object?
+
+    for member in members:
+        print(member)
+
+    # return list of practice times, --> which can be visualized outside of the method
 
 ##########################################
 # move this eventually to a test class
@@ -271,7 +287,7 @@ member_1 = [
     "6- 8",
     "6-8",
     "1pm-6pm",
-    "1pm-6:00pm",       # test case: there is something wrong with "6:00pm"
+    "1pm-6:00pm",
 
     # "10:30-21:00",
     # "10:30-21:00",
@@ -312,15 +328,23 @@ def main():
     ex_start = '10:00'  # start at 10am
     ex_end = '16:30'    # end 4:30pm
 
-    member1 = member_schedule(master, member_1)
-
     ###### Testing ######
-    print(member1.start)
-    print(member1.end)
-    print(len(member1.sched[0]))
+    member1 = member_schedule(master, member_1)
+    member2 = member_schedule(master, member_2)
+
+    # print(member1.start)
+    # print(member1.end)
+    # print(len(member1.sched[0]))
 
     # visualize_day(member1, 5)     # 0 = sunday
-    visualize_week(member1)
+    # visualize_week(member1)
+    # visualize_week(member2)
+    ###### Testing End ######
+
+    # modify members to include names? lmao
+    members = [member_1, member_2]
+
+    generate_practice_times(master, members)
 
     pass
 
