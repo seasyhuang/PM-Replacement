@@ -258,23 +258,46 @@ def member_schedule(master, avails):
 
 
     # TODO: Modify to add exceptions
-    print(avails[7])
+    # print("Exceptions: " + str(avails[7]))
 
     return m_sched
 
-# This method generates the practice schedule
+# Both t and m are schedule objects (start, end, sched)
+### t - temp, could be master, could be ouput of previous iteration of this function (mod)
+### m - member to compare
+def compare_schedules(t, m):
+    print(t.sched)
+    print(m.sched)
+    return mod
+
+# This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free)
+# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
 # -- idea for option: specify how many practices needed
-def generate_practice_times(master, members):
+def generate_practice_times(master, members_in):
     print("Generating practice times...")
+
+
     #  members - list of all memebrs (for member in members, do:
     #  member1 = member_schedule(master, member_1)
 
-    # TODO: change member into an object?
+    print("Schedule set from: " + str(master.start) + " - " + str(master.end))
 
-    for member in members:
-        print(member)
+    # members is an array holding member_schedule objects (after everything in members_in is converted)
+    members = []
+    for member in members_in:
+        members.append(member_schedule(master, member))
+
+    # for testing, so we can see the schedules
+    for m in members:
+        visualize_week(m)
+
+    ### IMPLEMENTATION 1: ###
+    ###  FULL HOUSE ONLY  ###
+    # Use compare_schedules helper to determine free times
+
+
+
 
     # return list of practice times, --> which can be visualized outside of the method
 
