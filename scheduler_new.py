@@ -9,10 +9,11 @@ import datetime
 import pprint
 
 class schedule:
-    def __init__(self, start, end):
+    def __init__(self, start, end, name):
         format = '%H:%M'    # hours and minutes only
         self.start = start
         self.end = end
+        self.name = name
         if isinstance(start, str):
             self.start = datetime.datetime.strptime(start, format)       # converts to datettime object
             self.start = datetime.time(self.start.hour, self.start.minute)
@@ -149,10 +150,10 @@ def visualize_week(schedule):
     arr2d = schedule.sched
 
     # Prints an informative banner at the top of the visualization
-    print("######### VISUALIZING WEEK #########")       # todo: there's a strptime method that converts int to day of week
+    print("######### VISUALIZING WEEK: " + schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
     print(st_t, end=" - ")
     print(e_t)
-    print("-")
+    print(" ")
 
     diff_hr = e_t.hour - st_t.hour
     diff_min = e_t.minute - st_t.minute
@@ -193,7 +194,8 @@ def visualize_week(schedule):
             elif temp is False: temp = " x "
             else: temp = str(toprint[j][i]) #   + "\t"
             print(temp, end=" ")
-        print()
+        print("")
+    print()
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_start, dt_end, i):
@@ -242,8 +244,8 @@ def modify_schedule(m_sched, dt_start, dt_end, i):
 
     return m_sched_mod
 
-def member_schedule(master, avails):
-    m_sched = schedule(master.start, master.end)        # Set array/schedule size to same as master
+def member_schedule(master, avails, name):
+    m_sched = schedule(master.start, master.end, name)        # Set array/schedule size to same as master
 
     for i in range(len(m_sched.sched)):                 # Modify array with avails
         day_avail = avails[i]
@@ -277,19 +279,11 @@ def compare_schedules(t, m):
 def generate_practice_times(master, members_in):
     print("Generating practice times...")
 
-
-    #  members - list of all memebrs (for member in members, do:
-    #  member1 = member_schedule(master, member_1)
-
+    #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
 
-    # members is an array holding member_schedule objects (after everything in members_in is converted)
-    members = []
-    for member in members_in:
-        members.append(member_schedule(master, member))
-
     # for testing, so we can see the schedules
-    for m in members:
+    for m in members_in:
         visualize_week(m)
 
     ### IMPLEMENTATION 1: ###
@@ -346,28 +340,27 @@ member_3 = [
 
 def main():
     """ Create grid/master schedule """
-    master = schedule('9:00', '22:00')
+    master = schedule('9:00', '22:00', "master")
 
     ex_start = '10:00'  # start at 10am
     ex_end = '16:30'    # end 4:30pm
 
     ###### Testing ######
-    member1 = member_schedule(master, member_1)
-    member2 = member_schedule(master, member_2)
+    member1 = member_schedule(master, member_1, "member 1")
+    member2 = member_schedule(master, member_2, "member 2")
 
     # print(member1.start)
     # print(member1.end)
     # print(len(member1.sched[0]))
 
     # visualize_day(member1, 5)     # 0 = sunday
-    # visualize_week(member1)
-    # visualize_week(member2)
+    visualize_week(member1)
+    visualize_week(member2)
     ###### Testing End ######
 
-    # modify members to include names? lmao
-    members = [member_1, member_2]
+    members = [member1, member2]                    # Creating member_schedule objects as input
+    generate_practice_times(master, members)        # generate_practice_times method only takes member_schedule OBJECTS as input
 
-    generate_practice_times(master, members)
 
     pass
 
