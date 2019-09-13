@@ -7,6 +7,7 @@ import sys
 from sys import argv
 import datetime
 import pprint
+import copy
 
 class schedule:
     def __init__(self, start, end, name):
@@ -159,8 +160,8 @@ def visualize_week(schedule):
     diff_min = e_t.minute - st_t.minute
     diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
 
-    # create toprint array that stores time (0) and schedules (1->7)
-    # not great because index is now off by 1  ¯\_(ツ)_/¯
+    # Create toprint array that stores time (0) and schedules (1->7)
+    # Not great because index is now off by 1  ¯\_(ツ)_/¯
     toprint = [ [],
                 [], [], [], [], [], [], [] ]
     toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
@@ -268,8 +269,14 @@ def member_schedule(master, avails, name):
 ### t - temp, could be master, could be ouput of previous iteration of this function (mod)
 ### m - member to compare
 def compare_schedules(t, m):
-    print(t.sched)
-    print(m.sched)
+    mod = copy.copy(t)
+    mod.name = "updated"
+
+    for d, day in enumerate(mod.sched):         # Ah yes enumerate is a thing
+        for i, timeslot in enumerate(day):
+            # Check if both m and t free at this time (AND)
+            free = timeslot & m.sched[d][i]
+            mod.sched[d][i] = free
     return mod
 
 # This method does all of the heavy lifting: generates the practice schedule
@@ -289,9 +296,8 @@ def generate_practice_times(master, members_in):
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
     # Use compare_schedules helper to determine free times
-
-
-
+    mod = compare_schedules(members_in[0], members_in[1])
+    visualize_week(mod)
 
     # return list of practice times, --> which can be visualized outside of the method
 
