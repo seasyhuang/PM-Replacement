@@ -8,6 +8,7 @@ from sys import argv
 import datetime
 import pprint
 import copy
+import calendar
 
 class schedule:
     def __init__(self, start, end, name):
@@ -265,6 +266,7 @@ def member_schedule(master, avails, name):
 
     return m_sched
 
+# HELPER for generate_practice_times()
 # Both t and m are schedule objects (start, end, sched)
 ### t - temp, could be master, could be ouput of previous iteration of this function (mod)
 ### m - member to compare
@@ -278,6 +280,21 @@ def compare_schedules(t, m):
             free = timeslot & m.sched[d][i]
             mod.sched[d][i] = free
     return mod
+
+# HELPER for generate_practice_times()
+# returns all potential practice times in a range (per day)
+# mod is a schedule object
+def get_practice_range(mod):
+    for i, day in enumerate(mod.sched):
+
+        print(calendar.day_abbr[(i-1)%7], end=": ")        # for python's calendar function to work, need to shift all by 1
+        print(day)
+
+        # TODO: datetime for date, not just weekly schedule --> for now, just hardcode
+        # my_date = date.today()
+        # calendar.day_name[my_date.weekday()]
+    range = []
+    return range
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
@@ -303,6 +320,8 @@ def generate_practice_times(master, members_in):
         else:
             mod = compare_schedules(mod, members_in[i])             # why this doesn't feel right lol
     visualize_week(mod)
+
+    get_practice_range(mod)
 
     # return list of practice times, --> which can be visualized outside of the method
 
