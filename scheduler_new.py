@@ -296,7 +296,12 @@ def generate_practice_times(master, members_in):
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
     # Use compare_schedules helper to determine free times
-    mod = compare_schedules(members_in[0], members_in[1])
+    mod = None
+    for i, m in enumerate(members_in):
+        if mod is None:
+            mod = compare_schedules(members_in[0], members_in[1])
+        else:
+            mod = compare_schedules(mod, members_in[i])             # why this doesn't feel right lol
     visualize_week(mod)
 
     # return list of practice times, --> which can be visualized outside of the method
@@ -335,10 +340,10 @@ member_3 = [
     "free",
     "4pm-6pm",
     "4pm-6pm",
+    "5pm-7pm",
     "4pm-6pm",
     "4pm-6pm",
-    "4pm-6pm",
-    "1pm-8pm",
+    "2pm-4pm",
     None ]
 
 # var1 = argv[1]
@@ -354,6 +359,7 @@ def main():
     ###### Testing ######
     member1 = member_schedule(master, member_1, "member 1")
     member2 = member_schedule(master, member_2, "member 2")
+    member3 = member_schedule(master, member_3, "member 3")
 
     # print(member1.start)
     # print(member1.end)
@@ -362,9 +368,10 @@ def main():
     # visualize_day(member1, 5)     # 0 = sunday
     visualize_week(member1)
     visualize_week(member2)
+    # exit(1)
     ###### Testing End ######
 
-    members = [member1, member2]                    # Creating member_schedule objects as input
+    members = [member1, member2, member3]                    # Creating member_schedule objects as input
     generate_practice_times(master, members)        # generate_practice_times method only takes member_schedule OBJECTS as input
 
 
