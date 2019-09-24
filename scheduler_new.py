@@ -289,20 +289,40 @@ def get_practice_range(mod):
 
         print(calendar.day_abbr[(i-1)%7], end=": ")        # for python's calendar function to work, need to shift all by 1
 
-        print(schedlist)
+        # print(schedlist)
         # looks at the the schedlist for each day, find all "ranges" of True
         true_range = []
+        true_range_dt_to_string = []
         switch = 0
         for i, bool in enumerate(schedlist):
             if bool is True and switch == 0:
-                print(i, end="")
+                # print(i)
                 switch = 1
                 true_range.append(i)
             if bool is False and switch == 1:
                 switch = 0
                 true_range.append(i-1)
-        print(true_range)
-        exit(1)
+        # print(true_range)
+
+        # (currently only one range) true_range stores the indices: use them to find associated datetime objects
+        # maybe use logic from visualize helper?
+        st_t = mod.start
+        e_t = mod.end
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+        for ind in true_range:
+            diff_i = datetime.timedelta(minutes=30*ind)
+            comb = dtdt + diff_i
+            comb = comb.time()
+            true_range_dt_to_string.append(str(comb.strftime("%H:%M")))
+
+        for j in true_range_dt_to_string:   # super gross printing method but whatever for now
+            print(j, end="-")               # TODO: fix how gross it is
+        print()
+
+        # start_range = true_range[0]       # this won't work if true_range is extended for multiple ranges
+        # end_range = true_range[1]         # maybe true_range = 2d array? --> start = true_range[i][0]
+
+        # if true_range is empty, return None
 
         # TODO: datetime for date, not just weekly schedule --> for now, just hardcode
         # my_date = date.today()
