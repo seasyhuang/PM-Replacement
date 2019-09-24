@@ -285,10 +285,24 @@ def compare_schedules(t, m):
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
 def get_practice_range(mod):
-    for i, day in enumerate(mod.sched):
+    for i, schedlist in enumerate(mod.sched):
 
         print(calendar.day_abbr[(i-1)%7], end=": ")        # for python's calendar function to work, need to shift all by 1
-        print(day)
+
+        print(schedlist)
+        # looks at the the schedlist for each day, find all "ranges" of True
+        true_range = []
+        switch = 0
+        for i, bool in enumerate(schedlist):
+            if bool is True and switch == 0:
+                print(i, end="")
+                switch = 1
+                true_range.append(i)
+            if bool is False and switch == 1:
+                switch = 0
+                true_range.append(i-1)
+        print(true_range)
+        exit(1)
 
         # TODO: datetime for date, not just weekly schedule --> for now, just hardcode
         # my_date = date.today()
@@ -318,12 +332,11 @@ def generate_practice_times(master, members_in):
         if mod is None:
             mod = compare_schedules(members_in[0], members_in[1])
         else:
-            mod = compare_schedules(mod, members_in[i])             # why this doesn't feel right lol
-    visualize_week(mod)
+            mod = compare_schedules(mod, members_in[i])             # Why this doesn't feel right lol
+    visualize_week(mod)                                             # Visualizing modified week outside of the method
 
-    get_practice_range(mod)
-
-    # return list of practice times, --> which can be visualized outside of the method
+    # CURRENTLY prints instead of returning
+    get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
 
 ##########################################
 # move this eventually to a test class
