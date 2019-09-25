@@ -45,42 +45,41 @@ class schedule:
 # HELPER for extracting avails --> datetime time objects
 # Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
 def convert_to_datetime(str):
-    # str = "10:30-21:00"
-    start = 0
-    end = 0
+    # str = "10:30-21:00"               # UPDATE: that allow 2+ ranges
+    ranges = []                         # Store all start, end pairs together (in separate arrays) inside "ranges"
+    split_string = [st_end.strip() for st_end in str.split(',')]
+    for str in split_string:
+        start = 0
+        end = 0
 
-    try:       # create this avail thing that will be split into start and end
-        avail = str.lower()
-        # could remove whitespace too ?? # TODO:
-    except:
-        avail = str
+        try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
+        except: avail = str
 
-    # Case: if it's the word free then set to True
-    if avail == 'free':
-        start = True
-        end = True
-    elif avail is None:
-        start = False
-        end = False
-    else:                                               # It's a time, so further processing gotta be done
-        avail.replace(" ", "")                          # Removing whitespace
-        times = avail.split("-")                        # Split into start and end time
-        times = [t.replace(" ", "") for t in times]     # Safety whitespace
+        if avail == 'free':                                 # Case: if it's the word free then set to True
+            start = True
+            end = True
+        elif avail is None:
+            start = False
+            end = False
+        else:                                               # It's a time, so further processing has be done
+            avail.replace(" ", "")                          # Removing whitespace
+            times = avail.split("-")                        # Split into start and end time
+            times = [t.replace(" ", "") for t in times]     # Safety whitespace
 
-        # print("splitting:", end=" ")
-        # print(times)
-        # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
+            # print("splitting:", end=" ")
+            # print(times)
+            # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
 
-        dt_av = []
-        for time in times:
-            converted = convert(time)
-            # print(converted)
-            dt_av.append(converted)
+            dt_av = []
+            for time in times:
+                converted = convert(time)
+                dt_av.append(converted)
 
-        start = dt_av[0]
-        end = dt_av[1]
+            start = dt_av[0]
+            end = dt_av[1]
 
-    return start, end
+        ranges.append([start, end])
+    return ranges
 
 # HELPER to convert whatever input time is in --> datetime time object
 # Text parsing in a bad way that tries to predict what members input
@@ -247,15 +246,17 @@ def modify_schedule(m_sched, dt_start, dt_end, i):
     return m_sched_mod
 
 def member_schedule(master, avails, name):
-    m_sched = schedule(master.start, master.end, name)        # Set array/schedule size to same as master
+    m_sched = schedule(master.start, master.end, name)          # Set array/schedule size to same as master
 
-    for i in range(len(m_sched.sched)):                 # Modify array with avails
-        day_avail = avails[i]
+    for i in range(len(m_sched.sched)):                         # Modify array with avails
+        day_avail = avails[i]                                   # At this step, still strings (no dateetime conversion)
         # print("day avail: ", end="")
         # print(day_avail)
 
-        dt_start, dt_end = convert_to_datetime(day_avail)   # Where dt_start and end are the avails members put in
+        dt_se = convert_to_datetime(day_avail)                  # UPDATE: dt_se is the 2D list ("ranges")
         # print(str(dt_start) + ", " + str(dt_end))
+
+        # TODO: next step is to change modify_schedule so it takes in dt_se (ranges) instead of dt_start, dt_end individually
 
         m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
         # print("---")
@@ -368,14 +369,16 @@ member_1 = [
     "6-8",
     "1pm-6pm",
     "1pm-6:00pm",
+    None ]
 
-    # "10:30-21:00",
-    # "10:30-21:00",
-    # "10:30-21:00",
-    # "10:30-21:00",
-    # "10:30-21:00",
-    # "10:30-21:00",
-    # "10:30-21:00",
+member_1_2cases = [
+    "6-8, 9-10",            # here is the 2 inputs
+    "Free",
+    "10:30-21:00",
+    "6- 8",
+    "6-8, 9-10",            # here is the 2 inputs
+    "1pm-6pm",
+    "1pm-6:00pm",
     None ]
 
 member_2 = [
@@ -409,7 +412,8 @@ def main():
     ex_end = '16:30'    # end 4:30pm
 
     ###### Testing ######
-    member1 = member_schedule(master, member_1, "member 1")
+    # member1 = member_schedule(master, member_1, "member 1")
+    member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
     member2 = member_schedule(master, member_2, "member 2")
     member3 = member_schedule(master, member_3, "member 3")
 
@@ -418,14 +422,14 @@ def main():
     # print(len(member1.sched[0]))
 
     # visualize_day(member1, 5)     # 0 = sunday
-    visualize_week(member1)
+    visualize_week(member1_2)
     visualize_week(member2)
     # exit(1)
     ###### Testing End ######
 
-    members = [member1, member2, member3]                    # Creating member_schedule objects as input
+    # members = [member1, member2, member3]                    # Creating member_schedule objects as input
+    members = [member1_2, member2]                        # testing with case: 2 inputs
     generate_practice_times(master, members)        # generate_practice_times method only takes member_schedule OBJECTS as input
-
 
     pass
 
