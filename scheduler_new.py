@@ -199,49 +199,44 @@ def visualize_week(schedule):
     print()
 
 # HELPER for changing member schedule
-def modify_schedule(m_sched, dt_start, dt_end, i):
+def modify_schedule(m_sched, dt_se, i):
     m_sched_mod = m_sched
+    first_pass = True                                            # Lazy switch for init all false
 
-    if ((dt_start is True) and (dt_end is True)):
-        for s in range(len(m_sched_mod.sched[i])):          # Set all to True
-            m_sched_mod.sched[i][s] = True
-        return m_sched_mod
+    for dt_range in dt_se:
+        dt_start = dt_range[0]
+        dt_end = dt_range[1]
 
-    for s in range(len(m_sched_mod.sched[i])):          # Set all to false
-        m_sched_mod.sched[i][s] = False
+        if ((dt_start is True) and (dt_end is True)):           # Case 1: completely free this day (there should only be 1 dt_range in dt_se)
+            for s in range(len(m_sched_mod.sched[i])):          # Set all to True
+                m_sched_mod.sched[i][s] = True
+            return m_sched_mod
 
-    if ((dt_start is False) and (dt_end is False)):
-        return m_sched_mod
-    # print(m_sched_mod.sched[i])
+        if first_pass is True:                                  # Only do this the first time
+            for s in range(len(m_sched_mod.sched[i])):          # Otherwise will overwrite changes with every dt_range
+                m_sched_mod.sched[i][s] = False                 # Set all to False
+                first_pass = False
 
-    # print(m_sched_mod.start)
-    # print(m_sched_mod.end)
-    # print(i)        # --> 0 is sunday
+        if ((dt_start is False) and (dt_end is False)):         # Case 2: completely busy (there should only be 1 dt_range in dt_se)
+            return m_sched_mod
 
-    # Get difference between start of master schedule and start of member avail (on day i)
-    t_hr_start = dt_start.hour - m_sched_mod.start.hour
-    t_min_start = dt_start.minute - m_sched_mod.start.minute
-    num_halfhr_start = int(t_min_start/30)
-    t_hr_end = dt_end.hour - m_sched_mod.start.hour
-    t_min_end = dt_end.minute - m_sched_mod.start.minute
-    num_halfhr_end = int(t_min_end/30)
+        # Case 3: modifications to m_sched_mod happen here
+        # Get difference between start of master schedule and start of member avail (on day i)
+        t_hr_start = dt_start.hour - m_sched_mod.start.hour
+        t_min_start = dt_start.minute - m_sched_mod.start.minute
+        num_halfhr_start = int(t_min_start/30)
+        t_hr_end = dt_end.hour - m_sched_mod.start.hour
+        t_min_end = dt_end.minute - m_sched_mod.start.minute
+        num_halfhr_end = int(t_min_end/30)
 
-    # Turn the difference into num "slots" (to be used in the schedule list)
-    # print("diff: ", end="")
-    # print(str(t_hr_start) + ":" + str(t_min_start))
-    # print(str(t_hr_end) + ":" + str(t_min_end))
-    num_slot_start = t_hr_start * 2 + num_halfhr_start
-    num_slot_end = t_hr_end * 2 + num_halfhr_end
+        # Turn the difference into num "slots" (to be used in the schedule list)
+        num_slot_start = t_hr_start * 2 + num_halfhr_start
+        num_slot_end = t_hr_end * 2 + num_halfhr_end
 
-    # print("num slots start: " + str(num_slot_start))
-    # print("num slots end: " + str(num_slot_end))
+        # TODO: pretty sure this logic doesn't work but i need to visualize it first
+        for j in range(num_slot_end)[num_slot_start:]:
+            m_sched_mod.sched[i][j] = True
 
-    # TODO: pretty sure this logic doesn't work but i need to visualize it first
-    for j in range(num_slot_end)[num_slot_start:]:
-        # print(j)
-        m_sched_mod.sched[i][j] = True
-
-    # print(m_sched_mod.sched[i])
 
     return m_sched_mod
 
@@ -254,12 +249,14 @@ def member_schedule(master, avails, name):
         # print(day_avail)
 
         dt_se = convert_to_datetime(day_avail)                  # UPDATE: dt_se is the 2D list ("ranges")
-        # print(str(dt_start) + ", " + str(dt_end))
+
+        print(dt_se)
+        print(dt_se[0])
 
         # TODO: next step is to change modify_schedule so it takes in dt_se (ranges) instead of dt_start, dt_end individually
-
-        m_sched = modify_schedule(m_sched, dt_start, dt_end, i)
-        # print("---")
+        m_sched = modify_schedule(m_sched, dt_se, i)            # new version
+        visualize_week(m_sched)
+        exit(1)
 
 
     # TODO: Modify to add exceptions
