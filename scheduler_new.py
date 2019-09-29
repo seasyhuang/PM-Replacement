@@ -351,6 +351,7 @@ def generate_practice_times(master, members_in):
 
     # CURRENTLY prints instead of returning
     get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
+    # NEXT TODO: FIX BUG: returned ranges off by one 18:00-20:30 should be 18:00-21:00"
 
 ##########################################
 # move this eventually to a test class
@@ -417,7 +418,6 @@ def main():
     # visualize_day(member1, 5)     # 0 = sunday
     visualize_week(member1_2)
     visualize_week(member2)
-    # exit(1)
     ###### Testing End ######
 
     # members = [member1, member2, member3]                    # Creating member_schedule objects as input
