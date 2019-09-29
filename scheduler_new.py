@@ -214,7 +214,7 @@ def modify_schedule(m_sched, dt_se, i):
 
         if first_pass is True:                                  # Only do this the first time
             for s in range(len(m_sched_mod.sched[i])):          # Otherwise will overwrite changes with every dt_range
-                m_sched_mod.sched[i][s] = False                 # Set all to False
+                m_sched_mod.sched[i][s] = False                 # Set all to False (init all false)
                 first_pass = False
 
         if ((dt_start is False) and (dt_end is False)):         # Case 2: completely busy (there should only be 1 dt_range in dt_se)
@@ -233,10 +233,8 @@ def modify_schedule(m_sched, dt_se, i):
         num_slot_start = t_hr_start * 2 + num_halfhr_start
         num_slot_end = t_hr_end * 2 + num_halfhr_end
 
-        # TODO: pretty sure this logic doesn't work but i need to visualize it first
         for j in range(num_slot_end)[num_slot_start:]:
             m_sched_mod.sched[i][j] = True
-
 
     return m_sched_mod
 
@@ -250,13 +248,11 @@ def member_schedule(master, avails, name):
 
         dt_se = convert_to_datetime(day_avail)                  # UPDATE: dt_se is the 2D list ("ranges")
 
+        print(str(i) + ": ", end="")
         print(dt_se)
-        print(dt_se[0])
 
         # TODO: next step is to change modify_schedule so it takes in dt_se (ranges) instead of dt_start, dt_end individually
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
-        visualize_week(m_sched)
-        exit(1)
 
 
     # TODO: Modify to add exceptions
@@ -369,11 +365,11 @@ member_1 = [
     None ]
 
 member_1_2cases = [
-    "6-8, 9-10",            # here is the 2 inputs
+    "6-8, 9pm-10pm",            # here is the 2 inputs
     "Free",
-    "10:30-21:00",
+    "10:30am-4:00pm, 18:00-21:00",       # here is the 2 inputs
     "6- 8",
-    "6-8, 9-10",            # here is the 2 inputs
+    "6-8, 9pm-10pm",            # here is the 2 inputs
     "1pm-6pm",
     "1pm-6:00pm",
     None ]
