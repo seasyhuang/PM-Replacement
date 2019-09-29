@@ -365,7 +365,7 @@ member_1 = [
     None ]
 
 member_1_2cases = [
-    "6-8, 9pm-10pm",            # here is the 2 inputs
+    "6-8, 9-10",            # TODO: 9-10 is interpreted as 9am-10am
     "Free",
     "10:30am-4:00pm, 18:00-21:00",       # here is the 2 inputs
     "6- 8",
