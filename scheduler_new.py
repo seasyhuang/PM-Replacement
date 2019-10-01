@@ -281,11 +281,9 @@ def compare_schedules(t, m):
 def get_practice_range(mod):
     for i, schedlist in enumerate(mod.sched):
 
-        print(calendar.day_abbr[(i-1)%7], end=": ")        # for python's calendar function to work, need to shift all by 1
+        print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
 
-        # print(schedlist)
-        # looks at the the schedlist for each day, find all "ranges" of True
-        true_range = []
+        true_range = []                                     # looks at the the schedlist for each day, find all "ranges" of True
         true_range_dt_to_string = []
         switch = 0
         for i, bool in enumerate(schedlist):
@@ -295,8 +293,7 @@ def get_practice_range(mod):
                 true_range.append(i)
             if bool is False and switch == 1:
                 switch = 0
-                true_range.append(i-1)
-        # print(true_range)
+                true_range.append(i)
 
         # (currently only one range) true_range stores the indices: use them to find associated datetime objects
         # maybe use logic from visualize helper?
@@ -312,6 +309,8 @@ def get_practice_range(mod):
         for j in true_range_dt_to_string:   # super gross printing method but whatever for now
             print(j, end="-")               # TODO: fix how gross it is
         print()
+
+        # NEXT TODO: fix this to take two inputs, fix the print out (dashes)
 
         # start_range = true_range[0]       # this won't work if true_range is extended for multiple ranges
         # end_range = true_range[1]         # maybe true_range = 2d array? --> start = true_range[i][0]
@@ -351,7 +350,6 @@ def generate_practice_times(master, members_in):
 
     # CURRENTLY prints instead of returning
     get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
-    # NEXT TODO: FIX BUG: returned ranges off by one 18:00-20:30 should be 18:00-21:00"
 
 ##########################################
 # move this eventually to a test class
