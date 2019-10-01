@@ -279,11 +279,11 @@ def compare_schedules(t, m):
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
 def get_practice_range(mod):
-    for i, schedlist in enumerate(mod.sched):
+    for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
 
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
 
-        true_range = []                                     # looks at the the schedlist for each day, find all "ranges" of True
+        true_range = []                                     # saves indices
         true_range_dt_to_string = []
         switch = 0
         for i, bool in enumerate(schedlist):
@@ -295,8 +295,7 @@ def get_practice_range(mod):
                 switch = 0
                 true_range.append(i)
 
-        # (currently only one range) true_range stores the indices: use them to find associated datetime objects
-        # maybe use logic from visualize helper?
+        # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
         e_t = mod.end
         dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
@@ -306,9 +305,28 @@ def get_practice_range(mod):
             comb = comb.time()
             true_range_dt_to_string.append(str(comb.strftime("%H:%M")))
 
-        for j in true_range_dt_to_string:   # super gross printing method but whatever for now
-            print(j, end="-")               # TODO: fix how gross it is
-        print()
+        if not true_range_dt_to_string: # Catch for days with no practice times
+            print("None")
+            pass
+
+        start = True                    # Boolean switch for start - end
+        single_range = True             # Boolean switch for number of ranges
+        if len(true_range_dt_to_string) > 2: single_range = False
+        for idj, j in enumerate(true_range_dt_to_string):
+            if single_range is True:
+                print(true_range_dt_to_string[0] + "-" + true_range_dt_to_string[1])
+                break
+            else:
+                if start is True:
+                    print(j, end="-")
+                    start = False
+                else:
+                    if not (idj+1 == len(true_range_dt_to_string)):
+                        print(j, end=", ")
+                    else:
+                        print(j)
+                    start = True
+
 
         # NEXT TODO: fix this to take two inputs, fix the print out (dashes)
 
