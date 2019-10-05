@@ -9,6 +9,7 @@ import datetime
 import pprint
 import copy
 import calendar
+import pandas as pd
 
 class schedule:
     def __init__(self, start, end, name):
@@ -255,7 +256,7 @@ def member_schedule(master, avails, name):
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
 
-    # TODO: Modify to add exceptions
+    # NEXT TODO: Modify to add exceptions - right now exceptions are still None
     # print("Exceptions: " + str(avails[7]))
 
     return m_sched
@@ -327,9 +328,6 @@ def get_practice_range(mod):
                         print(j)
                     start = True
 
-
-        # NEXT TODO: fix this to take two inputs, fix the print out (dashes)
-
         # start_range = true_range[0]       # this won't work if true_range is extended for multiple ranges
         # end_range = true_range[1]         # maybe true_range = 2d array? --> start = true_range[i][0]
 
@@ -369,6 +367,34 @@ def generate_practice_times(master, members_in):
     # CURRENTLY prints instead of returning
     get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
 
+# Returns list of member_schedule objects
+def create_members_from_excel(master, excel_path):
+    twice = pd.read_excel(excel_path, header=1)      # setting the header = 1 removes the title
+    print(twice.columns)
+
+    week = []
+    i = 0
+    name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe check this?
+    # print(twice.columns[0])
+    # from 1 to 7
+    for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
+        day_header = twice.columns[d+1]
+        print(day_header, end=": ")
+        day_avail = twice[day_header].iloc[0]
+        print(day_avail)
+        week.append(day_avail)
+
+    week.append(None)                           # TODO: this is a placeholder for exceptions (other)
+    print(week)
+    member = member_schedule(master, week, name) # NEXT TODO: fix time/datettime input 
+
+
+
+
+    # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
+    # member2 = member_schedule(master, member_2, "member 2")
+    # member3 = member_schedule(master, member_3, "member 3")
+
 ##########################################
 # move this eventually to a test class
 member_1 = [
@@ -382,11 +408,11 @@ member_1 = [
     None ]
 
 member_1_2cases = [
-    "6-8, 9-10",            # TODO: 9-10 is interpreted as 9am-10am
+    "6-8, 9-10",                # 9-10 is interpreted as 9am-10am --> actually this may be the best case
     "Free",
-    "10:30am-4:00pm, 18:00-21:00",       # here is the 2 inputs
+    "10:30am-4:00pm, 18:00-21:00",
     "6- 8",
-    "6-8, 9pm-10pm",            # here is the 2 inputs
+    "6-8, 9pm-10pm",
     "1pm-6pm",
     "1pm-6:00pm",
     None ]
@@ -418,14 +444,16 @@ def main():
     """ Create grid/master schedule """
     master = schedule('9:00', '22:00', "master")
 
-    ex_start = '10:00'  # start at 10am
-    ex_end = '16:30'    # end 4:30pm
-
     ###### Testing ######
     # member1 = member_schedule(master, member_1, "member 1")
-    member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
-    member2 = member_schedule(master, member_2, "member 2")
-    member3 = member_schedule(master, member_3, "member 3")
+    # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
+    # member2 = member_schedule(master, member_2, "member 2")
+    # member3 = member_schedule(master, member_3, "member 3")
+
+    ###### Testing with excel ######
+    twice = "test_twice.xlsx"
+    create_members_from_excel(master, twice)
+    exit(1)
 
     # print(member1.start)
     # print(member1.end)
@@ -436,9 +464,9 @@ def main():
     visualize_week(member2)
     ###### Testing End ######
 
-    # members = [member1, member2, member3]                    # Creating member_schedule objects as input
-    members = [member1_2, member2]                        # testing with case: 2 inputs
-    generate_practice_times(master, members)        # generate_practice_times method only takes member_schedule OBJECTS as input
+    # members = [member1, member2, member3]                     # Creating member_schedule objects as input
+    members = [member1_2, member2]                              # testing with case: 2 inputs
+    generate_practice_times(master, members)                    # generate_practice_times method only takes member_schedule OBJECTS as input
 
     pass
 
