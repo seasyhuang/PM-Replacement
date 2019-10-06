@@ -44,11 +44,66 @@ class schedule:
         print(self.arr)
 
 # HELPER for extracting avails --> datetime time objects
-# Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
+# *** this helper is starting to get complicated, TODO: turn into separate python class?
 def convert_to_datetime(str):
-    # str = "10:30-21:00"               # UPDATE: that allow 2+ ranges
-    ranges = []                         # Store all start, end pairs together (in separate arrays) inside "ranges"
-    split_string = [st_end.strip() for st_end in str.split(',')]
+    ranges = []
+    split_string = [st_end.strip().lower() for st_end in str.split(' ')]
+
+    # Does the string have "free"
+    if "free" in split_string:
+        if len(split_string) > 1:
+            # check "after"
+            split_string.pop(0)
+            print(split_string)
+            # NEXT TODO: helper to deal with "before" and "after"
+        else:
+            ranges.append([True, True])
+            return ranges
+
+    for str in split_string:
+        start = 0
+        end = 0
+
+        try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
+        except: avail = str
+
+        if avail == 'free':                                 # Case: if it's the word free then set to True
+            start = True
+            end = True
+        elif avail is None:
+            start = False
+            end = False
+        else:                                               # It's a time, so further processing has be done
+            avail.replace(" ", "")                          # Removing whitespace
+            times = avail.split("-")                        # Split into start and end time
+            times = [t.replace(" ", "") for t in times]     # Safety whitespace
+
+            # print("splitting:", end=" ")
+            # print(times)
+            # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
+
+            dt_av = []
+            for time in times:
+                converted = convert(time)
+                dt_av.append(converted)
+
+            start = dt_av[0]
+            end = dt_av[1]
+
+        ranges.append([start, end])
+    return ranges
+
+# Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
+def old_convert_to_datetime(str):
+    # str = "10:30-21:00"                                                   # UPDATE: that allow 2+ ranges
+    ranges = []                                                             # Store all start, end pairs together (in separate arrays) inside "ranges"
+    split_string = [st_end.strip().lower() for st_end in str.split(' ')]
+    print(split_string)
+
+    # First step: does the string have "Free"
+    if "free" in split_string:
+        print()
+
     for str in split_string:
         start = 0
         end = 0
@@ -370,23 +425,25 @@ def generate_practice_times(master, members_in):
 # Returns list of member_schedule objects
 def create_members_from_excel(master, excel_path):
     twice = pd.read_excel(excel_path, header=1)      # setting the header = 1 removes the title
+    print(twice.head)
     print(twice.columns)
 
+
     week = []
-    i = 0
+    i = 1
     name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe check this?
     # print(twice.columns[0])
     # from 1 to 7
     for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
         day_header = twice.columns[d+1]
         print(day_header, end=": ")
-        day_avail = twice[day_header].iloc[0]
+        day_avail = twice[day_header].iloc[i]
         print(day_avail)
         week.append(day_avail)
 
     week.append(None)                           # TODO: this is a placeholder for exceptions (other)
-    print(week)
-    member = member_schedule(master, week, name) # NEXT TODO: fix time/datettime input 
+    print(name)
+    member = member_schedule(master, week, name)
 
 
 
