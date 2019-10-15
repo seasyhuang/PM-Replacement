@@ -1,21 +1,31 @@
 import datetime
 
 # HELPER for extracting avails --> datetime time objects
-def convert_to_datetime(str):
+def convert_to_datetime(str, master):
     ranges = []
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]
+    print(split_string)
 
     # Does the string have "free"
     if "free" in split_string:
         if len(split_string) > 1:
-            # check "after"
             split_string.pop(0)
             print("----")
-            bef_betw_aft(split_string)
-            # NEXT TODO: helper to deal with "before" and "after"
+            times = bef_betw_aft(split_string, master)
+            ranges.append([convert(times[0]), convert(times[1])])
+            return ranges
         else:
             ranges.append([True, True])
             return ranges
+
+    else:
+        try:
+            times = bef_betw_aft(split_string, master)
+            ranges.append([convert(times[0]), convert(times[1])])
+            return ranges
+        except:
+            print("didn't work")                                # NEXT TODO: check logic on ipad ('free'/ no 'free')               
+            exit(1)
 
     for str in split_string:
         start = 0
@@ -44,10 +54,7 @@ def convert_to_datetime(str):
                 converted = convert(time)
                 dt_av.append(converted)
 
-            start = dt_av[0]
-            end = dt_av[1]
-
-        ranges.append([start, end])
+        ranges.append(dt_av)
     return ranges
 
 # Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
@@ -55,7 +62,6 @@ def old_convert_to_datetime(str):
     # str = "10:30-21:00"                                                   # UPDATE: that allow 2+ ranges
     ranges = []                                                             # Store all start, end pairs together (in separate arrays) inside "ranges"
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]
-    print(split_string)
 
     # First step: does the string have "Free"
     if "free" in split_string:
@@ -131,15 +137,22 @@ def convert(time):
         return False
 
 # HELPER for convert_to_datetime:
-# parses "before", "between", or "after" strings, converts to datetime object
-def bef_betw_aft(list):
-    dt = 0
+# Parses "before", "between", or "after" strings, converts to two pre-dt times
+# Master needed to get schedule start and end time
+def bef_betw_aft(list, master):
+    converted = []
+    id = list[0].lower().strip()            # after, before, between
 
-    # before/after case
-    # list is size 2, unless we have [after, 1, pm] # todo: address this (meiling and audrey)
+    if id == 'after':
+        converted.append(list[1])
+        converted.append(master.end.strftime("%I:%M%p"))
 
-    # between case
-    # list is size 3
+    if id == 'before':
+        converted.append(master.start.strftime("%I:%M%p"))
+        converted.append(list[1])
 
+    if id == 'between':
+        print('fix between')
+        exit(1)
 
-    return dt
+    return converted

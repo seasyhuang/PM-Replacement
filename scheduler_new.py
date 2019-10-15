@@ -173,12 +173,9 @@ def member_schedule(master, avails, name):
         # print("day avail: ", end="")
         # print(day_avail)
 
-        dt_se = dtconvert.convert_to_datetime(day_avail)                  # UPDATE: dt_se is the 2D list ("ranges")
-
+        dt_se = dtconvert.convert_to_datetime(day_avail, master)                  # UPDATE: dt_se is the 2D list ("ranges")
         print(str(i) + ": ", end="")
-        print(dt_se)
 
-        # TODO: next step is to change modify_schedule so it takes in dt_se (ranges) instead of dt_start, dt_end individually
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
 
@@ -301,7 +298,7 @@ def create_members_from_excel(master, excel_path):
 
 
     week = []
-    i = 1
+    i = 0
     name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe check this?
     # print(twice.columns[0])
     # from 1 to 7
@@ -316,8 +313,7 @@ def create_members_from_excel(master, excel_path):
     print(name)
     member = member_schedule(master, week, name)
 
-
-
+    visualize_week(member)
 
     # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
     # member2 = member_schedule(master, member_2, "member 2")
