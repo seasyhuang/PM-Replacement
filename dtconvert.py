@@ -10,21 +10,19 @@ def convert_to_datetime(str, master):
     if "free" in split_string:
         if len(split_string) > 1:
             split_string.pop(0)
-            print("----")
             times = bef_betw_aft(split_string, master)
             ranges.append([convert(times[0]), convert(times[1])])
             return ranges
         else:
-            ranges.append([True, True])
-            return ranges
-
+            return [[True, True]]
+    # no 'free':
     else:
-        try:
+        try:                                                # 1) just avails, 'after 5'
             times = bef_betw_aft(split_string, master)
             ranges.append([convert(times[0]), convert(times[1])])
             return ranges
-        except:
-            print("didn't work")                                # NEXT TODO: check logic on ipad ('free'/ no 'free')               
+        except:                                             # 2) not avail
+            return [[False, False]]
             exit(1)
 
     for str in split_string:
@@ -45,8 +43,6 @@ def convert_to_datetime(str, master):
             times = avail.split("-")                        # Split into start and end time
             times = [t.replace(" ", "") for t in times]     # Safety whitespace
 
-            # print("splitting:", end=" ")
-            # print(times)
             # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
 
             dt_av = []

@@ -78,7 +78,7 @@ def visualize_week(schedule):
     arr2d = schedule.sched
 
     # Prints an informative banner at the top of the visualization
-    print("######### VISUALIZING WEEK: " + schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
+    print("\n######### VISUALIZING WEEK: " + schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
     print(st_t, end=" - ")
     print(e_t)
     print(" ")
@@ -173,8 +173,8 @@ def member_schedule(master, avails, name):
         # print("day avail: ", end="")
         # print(day_avail)
 
-        dt_se = dtconvert.convert_to_datetime(day_avail, master)                  # UPDATE: dt_se is the 2D list ("ranges")
         print(str(i) + ": ", end="")
+        dt_se = dtconvert.convert_to_datetime(day_avail, master)                  # UPDATE: dt_se is the 2D list ("ranges")
 
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
@@ -190,7 +190,7 @@ def member_schedule(master, avails, name):
 ### m - member to compare
 def compare_schedules(t, m):
     mod = copy.copy(t)
-    mod.name = "updated"
+    mod.name = str(t.name) + " + " + str(m.name)
 
     for d, day in enumerate(mod.sched):         # Ah yes enumerate is a thing
         for i, timeslot in enumerate(day):
@@ -218,6 +218,8 @@ def get_practice_range(mod):
             if bool is False and switch == 1:
                 switch = 0
                 true_range.append(i)
+        if len(true_range) == 1:
+            true_range.append(len(schedlist))
 
         # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
@@ -269,22 +271,30 @@ def get_practice_range(mod):
 def generate_practice_times(master, members_in):
     print("Generating practice times...")
 
+    print("Members: ", end="")
+    for memb in members_in:
+        print(memb.name, end=", ")
+    print()
+
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
 
-    # for testing, so we can see the schedules
-    for m in members_in:
-        visualize_week(m)
+    # # for testing, so we can see the schedules
+    # for m in members_in:
+    #     visualize_week(m)
 
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
     # Use compare_schedules helper to determine free times
-    mod = None
+    mod = None                                                      # is this the first schedule
     for i, m in enumerate(members_in):
         if mod is None:
             mod = compare_schedules(members_in[0], members_in[1])
+            visualize_week(mod)
         else:
-            mod = compare_schedules(mod, members_in[i])             # Why this doesn't feel right lol
+            try:
+                mod = compare_schedules(mod, members_in[i+1])             # Why this doesn't feel right lol
+            except: pass
     visualize_week(mod)                                             # Visualizing modified week outside of the method
 
     # CURRENTLY prints instead of returning
@@ -292,28 +302,32 @@ def generate_practice_times(master, members_in):
 
 # Returns list of member_schedule objects
 def create_members_from_excel(master, excel_path):
+    members_arr = []
+
     twice = pd.read_excel(excel_path, header=1)      # setting the header = 1 removes the title
     print(twice.head)
     print(twice.columns)
 
+    for i in range(4):          # TESTING ONLY 4 RIGHT NOW
+        week = []
+        name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
+        # print(twice.columns[0])
+        # from 1 to 7
+        for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
+            day_header = twice.columns[d+1]
+            print(day_header, end=": ")
+            day_avail = twice[day_header].iloc[i]
+            print(day_avail)
+            week.append(day_avail)
 
-    week = []
-    i = 0
-    name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe check this?
-    # print(twice.columns[0])
-    # from 1 to 7
-    for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
-        day_header = twice.columns[d+1]
-        print(day_header, end=": ")
-        day_avail = twice[day_header].iloc[i]
-        print(day_avail)
-        week.append(day_avail)
+        week.append(None)                           # TODO: this is a placeholder for exceptions (other)
+        print(name)
+        member = member_schedule(master, week, name)
 
-    week.append(None)                           # TODO: this is a placeholder for exceptions (other)
-    print(name)
-    member = member_schedule(master, week, name)
+        visualize_week(member)
+        members_arr.append(member)
 
-    visualize_week(member)
+    return members_arr
 
     # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
     # member2 = member_schedule(master, member_2, "member 2")
@@ -330,7 +344,6 @@ member_1 = [
     "1pm-6pm",
     "1pm-6:00pm",
     None ]
-
 member_1_2cases = [
     "6-8, 9-10",                # 9-10 is interpreted as 9am-10am --> actually this may be the best case
     "Free",
@@ -340,7 +353,6 @@ member_1_2cases = [
     "1pm-6pm",
     "1pm-6:00pm",
     None ]
-
 member_2 = [
     "free",
     "6pm-9pm",
@@ -350,7 +362,6 @@ member_2 = [
     "6pm-8pm",
     "free",
     None ]
-
 member_3 = [
     "free",
     "4pm-6pm",
@@ -376,12 +387,9 @@ def main():
 
     ###### Testing with excel ######
     twice = "test_twice.xlsx"
-    create_members_from_excel(master, twice)
+    members_arr = create_members_from_excel(master, twice)
+    generate_practice_times(master, members_arr)
     exit(1)
-
-    # print(member1.start)
-    # print(member1.end)
-    # print(len(member1.sched[0]))
 
     # visualize_day(member1, 5)     # 0 = sunday
     visualize_week(member1_2)
