@@ -363,13 +363,13 @@ member_2 = [
     "free",
     None ]
 member_3 = [
-    "Free",
-    "After 5:30",       # something wrong with :30
-    "After 6:30",
-    "After 5:30",
+    "After 6",
+    "After 12h",
+    "After 6h",
     "After 5",
-    "After 4",
+    "After 10 am",
     "Free",
+    "Free except 16h30-18h30",
     None ]
 
 # var1 = argv[1]
@@ -383,7 +383,9 @@ def main():
     # member1 = member_schedule(master, member_1, "member 1")
     # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
     # member2 = member_schedule(master, member_2, "member 2")
-    # member3 = member_schedule(master, member_3, "Seasy")
+    # member3 = member_schedule(master, member_3, "Cindy")
+    # visualize_week(member3)
+    # exit(1)
 
     ###### Testing with excel ######
     twice = "test_twice.xlsx"

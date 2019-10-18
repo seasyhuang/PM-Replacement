@@ -6,100 +6,63 @@ def convert_to_datetime(str, master):
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]
     print(split_string)
 
+    # first check: if string is 'not' 'avail', reject
+    if (split_string[0] == 'not' and split_string[1] == 'available'):
+        return [[False, False]]
+
     # Does the string have "free"
     if "free" in split_string:
         if len(split_string) > 1:
             split_string.pop(0)
-            times = bef_betw_aft(split_string, master)
-            ranges.append([convert(times[0]), convert(times[1])])
+            ranges = bef_betw_aft(split_string, master)
             return ranges
         else:
             return [[True, True]]
     # no 'free':
     else:
         try:                                                # 1) just avails, 'after 5'
-            times = bef_betw_aft(split_string, master)
-            ranges.append([convert(times[0]), convert(times[1])])
+            ranges = bef_betw_aft(split_string, master)
             return ranges
         except:                                             # 2) not avail
-            return [[False, False]]
             exit(1)
 
-    for str in split_string:
-        start = 0
-        end = 0
-
-        try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
-        except: avail = str
-
-        if avail == 'free':                                 # Case: if it's the word free then set to True
-            start = True
-            end = True
-        elif avail is None:
-            start = False
-            end = False
-        else:                                               # It's a time, so further processing has be done
-            avail.replace(" ", "")                          # Removing whitespace
-            times = avail.split("-")                        # Split into start and end time
-            times = [t.replace(" ", "") for t in times]     # Safety whitespace
-
-            # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
-
-            dt_av = []
-            for time in times:
-                converted = convert(time)
-                dt_av.append(converted)
-
-        ranges.append(dt_av)
-    return ranges
-
-# Ex str input: "10:30-21:00" --> out: start and end (dt time objs)
-def old_convert_to_datetime(str):
-    # str = "10:30-21:00"                                                   # UPDATE: that allow 2+ ranges
-    ranges = []                                                             # Store all start, end pairs together (in separate arrays) inside "ranges"
-    split_string = [st_end.strip().lower() for st_end in str.split(' ')]
-
-    # First step: does the string have "Free"
-    if "free" in split_string:
-        print()
-
-    for str in split_string:
-        start = 0
-        end = 0
-
-        try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
-        except: avail = str
-
-        if avail == 'free':                                 # Case: if it's the word free then set to True
-            start = True
-            end = True
-        elif avail is None:
-            start = False
-            end = False
-        else:                                               # It's a time, so further processing has be done
-            avail.replace(" ", "")                          # Removing whitespace
-            times = avail.split("-")                        # Split into start and end time
-            times = [t.replace(" ", "") for t in times]     # Safety whitespace
-
-            # print("splitting:", end=" ")
-            # print(times)
-            # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
-
-            dt_av = []
-            for time in times:
-                converted = convert(time)
-                dt_av.append(converted)
-
-            start = dt_av[0]
-            end = dt_av[1]
-
-        ranges.append([start, end])
+    # for str in split_string:
+    #     start = 0
+    #     end = 0
+    #
+    #     try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
+    #     except: avail = str
+    #
+    #     if avail == 'free':                                 # Case: if it's the word free then set to True
+    #         start = True
+    #         end = True
+    #     elif avail is None:
+    #         start = False
+    #         end = False
+    #     else:                                               # It's a time, so further processing has be done
+    #         avail.replace(" ", "")                          # Removing whitespace
+    #         times = avail.split("-")                        # Split into start and end time
+    #         times = [t.replace(" ", "") for t in times]     # Safety whitespace
+    #
+    #         # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
+    #
+    #         dt_av = []
+    #         for time in times:
+    #             converted = convert(time)
+    #             dt_av.append(converted)
+    #
+    #     ranges.append(dt_av)
     return ranges
 
 # HELPER to convert whatever input time is in --> datetime time object
 # Text parsing in a bad way that tries to predict what members input
 # Ex: 6pm, 6:00, 6
 def convert(time):
+    time = french(time)
+    fr = ['13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
+    try:    hr, min = [hrm for hrm in time.split(':')]
+    except: pass
+
     # 6 --> make assumptions --> pass through strptime
     if time.isdigit():   # checks if numeric only: "6:00".isdigit() --> false
         try:
@@ -124,6 +87,13 @@ def convert(time):
         dt_time = datetime.datetime.strptime(time, "%I:%M%p").time()
         return dt_time
 
+    # 16:30
+    elif hr in fr:
+        try:    dt_time = datetime.datetime.strptime(time, "%H:%M").time()
+        except: dt_time = datetime.datetime.strptime(time, "%Hh%M").time()      # not sure this does anything
+        return dt_time
+
+
     # 6:00, 12:00
     elif ((":" in time) and (len(time) < 6)):
         hrmin = time.split(":")
@@ -143,21 +113,63 @@ def convert(time):
 
 # HELPER for convert_to_datetime:
 # Parses "before", "between", or "after" strings, converts to two pre-dt times
+# DT CONVERSION done in this method!!
 # Master needed to get schedule start and end time
 def bef_betw_aft(list, master):
+    # times = bef_betw_aft(split_string, master)
+    # ranges.append([convert(times[0]), convert(times[1])])
+
     converted = []
     id = list[0].lower().strip()            # after, before, between
 
     if id == 'after':
-        converted.append(list[1])
-        converted.append(master.end.strftime("%I:%M%p"))
+        converted.append([
+            convert(list[1]),
+            convert(master.end.strftime("%I:%M%p"))
+            ])
 
     if id == 'before':
-        converted.append(master.start.strftime("%I:%M%p"))
-        converted.append(list[1])
+        converted.append([
+            convert(master.start.strftime("%I:%M%p")),
+            convert(list[1])
+            ])
 
     if id == 'between':
         print('fix between')
         exit(1)
 
+    if id == 'except':
+        try:
+            se = extract_again(list[1:])
+        except:
+            print("error running extract_again()")
+            exit(1)
+
+        converted.append([
+            convert(master.start.strftime("%I:%M%p")),
+            convert(se[0])
+            ])
+        converted.append([
+            convert(se[1]),
+            convert(master.end.strftime("%I:%M%p"))
+            ])
+
     return converted
+
+# messy helper
+# in: list, with 'except'/'between'/etc removed
+def extract_again(list):
+    string = list[0]
+    # case 1: 16h30-18h30 (doesn't work with 15 min intervals)
+    split_string = [st.strip().lower() for st in string.split('-')]
+    # fixing french h/hr
+    for i in range(len(split_string)):
+        t = split_string[i]
+        split_string[i] = french(t)
+    return split_string
+
+def french(string):
+    if len(string) > 3:
+        return string.replace('h', ':')
+    else:
+        return string.replace('h', '')
