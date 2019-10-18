@@ -126,7 +126,16 @@ def convert(time):
 
     # 6:00, 12:00
     elif ((":" in time) and (len(time) < 6)):
-        dt_time = datetime.datetime.strptime(time, '%H:%M').time()
+        hrmin = time.split(":")
+        hr = int(hrmin[0])
+        min = int(hrmin[1])
+
+        if(hr < 9):
+            time = str(hr) + ":" + str(min) + "pm"
+        else:
+            time = str(hr) + ":" + str(min) + "am"
+
+        dt_time = datetime.datetime.strptime(time, "%I:%M%p").time()
         return dt_time
 
     else:

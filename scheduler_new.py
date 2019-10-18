@@ -308,7 +308,7 @@ def create_members_from_excel(master, excel_path):
     print(twice.head)
     print(twice.columns)
 
-    for i in range(4):          # TESTING ONLY 4 RIGHT NOW
+    for i in range(6):          # TESTING ONLY 4 RIGHT NOW
         week = []
         name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
         # print(twice.columns[0])
@@ -363,13 +363,13 @@ member_2 = [
     "free",
     None ]
 member_3 = [
-    "free",
-    "4pm-6pm",
-    "4pm-6pm",
-    "5pm-7pm",
-    "4pm-6pm",
-    "4pm-6pm",
-    "2pm-4pm",
+    "Free",
+    "After 5:30",       # something wrong with :30
+    "After 6:30",
+    "After 5:30",
+    "After 5",
+    "After 4",
+    "Free",
     None ]
 
 # var1 = argv[1]
@@ -383,7 +383,7 @@ def main():
     # member1 = member_schedule(master, member_1, "member 1")
     # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
     # member2 = member_schedule(master, member_2, "member 2")
-    # member3 = member_schedule(master, member_3, "member 3")
+    # member3 = member_schedule(master, member_3, "Seasy")
 
     ###### Testing with excel ######
     twice = "test_twice.xlsx"
