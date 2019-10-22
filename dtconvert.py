@@ -7,7 +7,7 @@ def convert_to_datetime(str, master):
     print(split_string)
 
     # first check: if string is 'not' 'avail', reject
-    if (split_string[0] == 'not' and split_string[1] == 'available'):
+    if (split_string[0].startswith('n') and split_string[1].startswith('av')):
         return [[False, False]]
 
     # Does the string have "free"
@@ -25,33 +25,6 @@ def convert_to_datetime(str, master):
             return ranges
         except:                                             # 2) not avail
             exit(1)
-
-    # for str in split_string:
-    #     start = 0
-    #     end = 0
-    #
-    #     try:    avail = str.lower()                         # Safety: if the string is a word ("Free")
-    #     except: avail = str
-    #
-    #     if avail == 'free':                                 # Case: if it's the word free then set to True
-    #         start = True
-    #         end = True
-    #     elif avail is None:
-    #         start = False
-    #         end = False
-    #     else:                                               # It's a time, so further processing has be done
-    #         avail.replace(" ", "")                          # Removing whitespace
-    #         times = avail.split("-")                        # Split into start and end time
-    #         times = [t.replace(" ", "") for t in times]     # Safety whitespace
-    #
-    #         # TODO: striptime has functionality that can detect weekday = could use + w/ gui? (%a/%A)
-    #
-    #         dt_av = []
-    #         for time in times:
-    #             converted = convert(time)
-    #             dt_av.append(converted)
-    #
-    #     ranges.append(dt_av)
     return ranges
 
 # HELPER to convert whatever input time is in --> datetime time object
@@ -135,8 +108,16 @@ def bef_betw_aft(list, master):
             ])
 
     if id == 'between':
-        print('fix between')
-        exit(1)
+        try:
+            se = extract_again(list[1:])
+        except:
+            print("error running extract_again()")
+            exit(1)
+
+        converted.append([
+            convert(se[0]),
+            convert(se[1])
+            ])
 
     if id == 'except':
         try:
