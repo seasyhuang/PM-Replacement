@@ -294,6 +294,7 @@ def generate_practice_times(master, members_in):
         else:
             try:
                 mod = compare_schedules(mod, members_in[i+1])             # Why this doesn't feel right lol
+                visualize_week(mod)
             except: pass
     visualize_week(mod)                                             # Visualizing modified week outside of the method
 
@@ -308,7 +309,8 @@ def create_members_from_excel(master, excel_path):
     print(twice.head)
     print(twice.columns)
 
-    for i in range(6):          # TESTING ONLY 4 RIGHT NOW
+    # for i in range(10):          # CHANGE when TESTING VALUES
+    for i in range(len(twice.columns)):
         week = []
         name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
         # print(twice.columns[0])

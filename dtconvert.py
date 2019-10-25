@@ -32,8 +32,7 @@ def convert_to_datetime(str, master):
 # Ex: 6pm, 6:00, 6
 def convert(time):
     time = french(time)
-    print(time)
-    fr = ['13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
+    fr = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
     try:
         xhr, xmin = [hrm for hrm in time.split(':')]
     except: pass
@@ -155,4 +154,4 @@ def french(string):
     if len(string) > 3:
         return string.replace('h', ':')
     else:
-        return string.replace('h', '')
+        return string.replace('h', ':00')
