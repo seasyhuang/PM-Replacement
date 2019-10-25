@@ -32,8 +32,10 @@ def convert_to_datetime(str, master):
 # Ex: 6pm, 6:00, 6
 def convert(time):
     time = french(time)
+    print(time)
     fr = ['13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
-    try:    hr, min = [hrm for hrm in time.split(':')]
+    try:
+        xhr, xmin = [hrm for hrm in time.split(':')]
     except: pass
 
     # 6 --> make assumptions --> pass through strptime
@@ -61,7 +63,7 @@ def convert(time):
         return dt_time
 
     # 16:30
-    elif hr in fr:
+    elif xhr in fr:
         try:    dt_time = datetime.datetime.strptime(time, "%H:%M").time()
         except: dt_time = datetime.datetime.strptime(time, "%Hh%M").time()      # not sure this does anything
         return dt_time
