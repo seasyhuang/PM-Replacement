@@ -310,7 +310,7 @@ def create_members_from_excel(master, excel_path):
     print(twice.columns)
 
     # for i in range(10):          # CHANGE when TESTING VALUES
-    for i in range(len(twice.columns)):
+    for i, row in twice.iterrows():
         week = []
         name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
         # print(twice.columns[0])
@@ -392,17 +392,11 @@ def main():
     ###### Testing with excel ######
     twice = "test_twice.xlsx"
     members_arr = create_members_from_excel(master, twice)
-    generate_practice_times(master, members_arr)
+
     exit(1)
+    generate_practice_times(master, members_arr)
 
-    # visualize_day(member1, 5)     # 0 = sunday
-    visualize_week(member1_2)
-    visualize_week(member2)
     ###### Testing End ######
-
-    # members = [member1, member2, member3]                     # Creating member_schedule objects as input
-    members = [member1_2, member2]                              # testing with case: 2 inputs
-    generate_practice_times(master, members)                    # generate_practice_times method only takes member_schedule OBJECTS as input
 
     pass
 
