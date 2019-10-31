@@ -10,6 +10,29 @@ def convert_to_datetime(str, master):
     if (split_string[0].startswith('n') and split_string[1].startswith('av')):
         return [[False, False]]
 
+    if "can\'t" in split_string:
+
+        # needs bef_betw_aft procressing
+        if len(split_string) > 2:
+            rr = bef_betw_aft(split_string[1:], master)[0]
+            cantstart = rr[0]
+            cantend = rr[1]
+
+        else:
+            rr = extract_again(split_string[1:])
+            cantstart = convert(rr[0])
+            cantend = convert(rr[1])
+
+        if cantstart == master.start:
+            ranges.append([cantend, master.end])
+        elif cantend == master.end:
+            ranges.append([master.start, cantstart])
+        else:
+            ranges.append([master.start, cantstart])
+            ranges.append([cantend, master.end])
+
+        return ranges
+
     # Does the string have "free"
     if "free" in split_string:
         if len(split_string) > 1:
