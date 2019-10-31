@@ -392,15 +392,9 @@ def main():
     ###### Testing with excel ######
     twice = "test_twice.xlsx"
     members_arr = create_members_from_excel(master, twice)
-
-    exit(1)
     generate_practice_times(master, members_arr)
 
-    ###### Testing End ######
-
     pass
-
-
 
 if __name__ == '__main__':
     sys.exit(main())
