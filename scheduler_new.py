@@ -229,6 +229,9 @@ def get_practice_range(mod):
             diff_i = datetime.timedelta(minutes=30*ind)
             comb = dtdt + diff_i
             comb = comb.time()
+            print(comb)
+            # store the comb and reuse in DATETIME DATE method 
+            exit(1)
             true_range_dt_to_string.append(str(comb.strftime("%H:%M")))
 
         if not true_range_dt_to_string: # Catch for days with no practice times
@@ -266,10 +269,8 @@ def get_practice_range(mod):
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
-# -- idea for option: specify how many practices needed
 def generate_practice_times(master, members_in):
-    print("Generating practice times...")
+    print("Generating practice times (all members)...")
 
     print("Members: ", end="")
     for memb in members_in:
@@ -300,6 +301,13 @@ def generate_practice_times(master, members_in):
 
     # CURRENTLY prints instead of returning
     get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
+    return mod
+
+# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
+# -- idea for option: specify how many practices needed
+def generate_practice_times_2(master, members_in):
+    print("Generating practice times...")
+
 
 # Returns list of member_schedule objects
 def create_members_from_excel(master, excel_path):
