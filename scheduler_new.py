@@ -224,13 +224,13 @@ def get_practice_range(mod):
         # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
         e_t = mod.end
-        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)      # TODO: change dtdt (1,1,1) to start of TODAY's week
         for ind in true_range:
-            diff_i = datetime.timedelta(minutes=30*ind)
-            comb = dtdt + diff_i
-            comb = comb.time()
-            print(comb)
-            # store the comb and reuse in DATETIME DATE method 
+            diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
+            dt_comb = dtdt + diff_i                         # where dtdt is the starting date and time
+            comb = dt_comb.time()
+            print(dt_comb)
+            # store the comb and reuse in DATETIME DATE method
             exit(1)
             true_range_dt_to_string.append(str(comb.strftime("%H:%M")))
 
