@@ -203,69 +203,82 @@ def compare_schedules(t, m):
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
 def get_practice_range(mod):
+    r_comb = []
     for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
 
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
 
         true_range = []                                     # saves indices
-        true_range_dt_to_string = []
+        true_range_dt = []
         switch = 0
-        for i, bool in enumerate(schedlist):
+        for j, bool in enumerate(schedlist):
             if bool is True and switch == 0:
                 # print(i)
                 switch = 1
-                true_range.append(i)
+                true_range.append(j)
             if bool is False and switch == 1:
                 switch = 0
-                true_range.append(i)
+                true_range.append(j)
         if len(true_range) == 1:
             true_range.append(len(schedlist))
 
         # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
         e_t = mod.end
-        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)      # TODO: change dtdt (1,1,1) to start of TODAY's week
+        dtd = get_dt_date(i)
+        dtdt = datetime.datetime.combine(dtd, st_t)      # TODO: change dtdt (1,1,1) to start of TODAY's week
+
         for ind in true_range:
             diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
-            dt_comb = dtdt + diff_i                         # where dtdt is the starting date and time
-            comb = dt_comb.time()
-            print(dt_comb)
-            # store the comb and reuse in DATETIME DATE method
-            exit(1)
-            true_range_dt_to_string.append(str(comb.strftime("%H:%M")))
+            comb = dtdt + diff_i                         # where dtdt is the starting date and time
+            comb = comb.time()
+            true_range_dt.append(comb)
 
-        if not true_range_dt_to_string: # Catch for days with no practice times
+        if not true_range_dt: # Catch for days with no practice times
             print("None")
+            r_comb.append(None)
             pass
 
         start = True                    # Boolean switch for start - end
         single_range = True             # Boolean switch for number of ranges
-        if len(true_range_dt_to_string) > 2: single_range = False
-        for idj, j in enumerate(true_range_dt_to_string):
+        if len(true_range_dt) > 2: single_range = False
+
+        t_r_comb = []
+        t1 = []
+        for idj, j in enumerate(true_range_dt):
             if single_range is True:
-                print(true_range_dt_to_string[0] + "-" + true_range_dt_to_string[1])
+                t_r_comb = [[true_range_dt[0], true_range_dt[1]]]
+                print(str(true_range_dt[0].strftime("%H:%M")) + "-" + str(true_range_dt[1].strftime("%H:%M")))
+                r_comb.append(t_r_comb)
                 break
             else:
                 if start is True:
-                    print(j, end="-")
+                    print(str(j.strftime("%H:%M")), end="-")
+                    t1.append(j)
                     start = False
                 else:
-                    if not (idj+1 == len(true_range_dt_to_string)):
-                        print(j, end=", ")
+                    t1.append(j)
+                    t_r_comb.append(t1)
+                    t1 = []
+
+                    if not (idj+1 == len(true_range_dt)):
+                        print(str(j.strftime("%H:%M")), end=", ")
+
                     else:
-                        print(j)
+                        print(str(j.strftime("%H:%M")))
+                        r_comb.append(t_r_comb)
+
                     start = True
 
-        # start_range = true_range[0]       # this won't work if true_range is extended for multiple ranges
-        # end_range = true_range[1]         # maybe true_range = 2d array? --> start = true_range[i][0]
+    return r_comb
 
-        # if true_range is empty, return None
+def get_dt_date(i):
+    # print(i)            # 0 = sun
+    weekday = datetime.date.today()
+    idx = (weekday.weekday() + 1) % 7
+    # print(idx)
 
-        # TODO: datetime for date, not just weekly schedule --> for now, just hardcode
-        # my_date = date.today()
-        # calendar.day_name[my_date.weekday()]
-    range = []
-    return range
+    return weekday
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
