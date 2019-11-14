@@ -225,8 +225,7 @@ def get_practice_range(mod):
         # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
         e_t = mod.end
-        dtd = get_dt_date(i)
-        dtdt = datetime.datetime.combine(dtd, st_t)      # TODO: change dtdt (1,1,1) to start of TODAY's week
+        dtdt = datetime.datetime.combine(datetime.date(1,1,1), st_t)      # TODO: arbitrary dtdt (1,1,1)
 
         for ind in true_range:
             diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
@@ -270,13 +269,27 @@ def get_practice_range(mod):
 
                     start = True
 
+    suggest_prac(r_comb)
+
     return r_comb
 
-def get_dt_date(i):
+# uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
+def suggest_prac(n, r_comb):
     # print(i)            # 0 = sun
     weekday = datetime.date.today()
-    idx = (weekday.weekday() + 1) % 7
-    # print(idx)
+    idx = (weekday.weekday() + 1) % 7           # need weekdays shifted by 1 (wait can we do this with iso or whatever it's called?)
+
+    # for loop n + 1 times
+    # get n index where r_comb isn't None
+    # STORE practice dates (instead of just straight up printing)
+    # for now: suggestions are just the range (make mod for earlier? or nah too complicated?)
+    
+    # do nice printy thing from stored suggestions where last one says "filming" instead of suggestion
+
+    print(idx)
+    print(weekday)
+
+    print(r_comb)
 
     return weekday
 
