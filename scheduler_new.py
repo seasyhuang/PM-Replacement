@@ -269,27 +269,39 @@ def get_practice_range(mod):
 
                     start = True
 
-    suggest_prac(r_comb)
+    suggest_prac(4, r_comb)
 
     return r_comb
 
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
 def suggest_prac(n, r_comb):
-    # print(i)            # 0 = sun
+
+    print()
+    print("Suggested dates:")            # 0 = sun
     weekday = datetime.date.today()
     idx = (weekday.weekday() + 1) % 7           # need weekdays shifted by 1 (wait can we do this with iso or whatever it's called?)
+    i = 1
 
     # for loop n + 1 times
-    # get n index where r_comb isn't None
+    while(n is not 0):
+        # get n index where r_comb isn't None
+        # if (thing at idx+1 is not None:):
+        j = (idx+i-1)%7
+
+        if r_comb[j] is not None:
+            print(calendar.day_abbr[j], end=": ")
+            print(j, end=" ")
+            print(r_comb[j])
+            n -= 1
+
+        i += 1
+
+        # print(idx)
     # STORE practice dates (instead of just straight up printing)
     # for now: suggestions are just the range (make mod for earlier? or nah too complicated?)
-    
+
     # do nice printy thing from stored suggestions where last one says "filming" instead of suggestion
-
-    print(idx)
-    print(weekday)
-
-    print(r_comb)
+    # print(weekday)
 
     return weekday
 
