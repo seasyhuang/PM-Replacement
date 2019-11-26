@@ -290,24 +290,20 @@ def suggest_prac(n, r_comb):
         # if (thing at idx+1 is not None:):
         j = (idx+i-1)%7
 
+        # STORE practice dates + PRINT
         if r_comb[j] is not None:
-            print(calendar.day_abbr[j-1], end=": ")
+            print((weekday + datetime.timedelta(days=i-1)).strftime("%A, %B %d %Y"), end=": ")
             for dt in r_comb[j]:
                 print(dt[0].strftime("%H:%M"), end="-")
                 print(dt[1].strftime("%H:%M"), end=" ")
             print()
-            print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
+            # print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
             n -= 1
 
         i += 1
 
         # print(idx)
-    # STORE practice dates (instead of just straight up printing)
     # for now: suggestions are just the range (make mod for earlier? or nah too complicated?)
-
-    # do nice printy thing from stored suggestions where last one says "filming" instead of suggestion
-    # print(weekday)
-
     return weekday
 
 # This method does all of the heavy lifting: generates the practice schedule
