@@ -204,6 +204,7 @@ def compare_schedules(t, m):
 # mod is a schedule object
 def get_practice_range(mod):
     r_comb = []
+    print("Weekly Schedule:")
     for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
 
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
@@ -244,6 +245,7 @@ def get_practice_range(mod):
 
         t_r_comb = []
         t1 = []
+
         for idj, j in enumerate(true_range_dt):
             if single_range is True:
                 t_r_comb = [[true_range_dt[0], true_range_dt[1]]]
@@ -289,9 +291,12 @@ def suggest_prac(n, r_comb):
         j = (idx+i-1)%7
 
         if r_comb[j] is not None:
-            print(calendar.day_abbr[j], end=": ")
-            print(j, end=" ")
-            print(r_comb[j])
+            print(calendar.day_abbr[j-1], end=": ")
+            for dt in r_comb[j]:
+                print(dt[0].strftime("%H:%M"), end="-")
+                print(dt[1].strftime("%H:%M"), end=" ")
+            print()
+            print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
             n -= 1
 
         i += 1
