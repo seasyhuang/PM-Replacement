@@ -271,7 +271,7 @@ def get_practice_range(mod):
 
                     start = True
 
-    suggest_prac(4, r_comb)
+    suggest_prac(5, r_comb)
 
     return r_comb
 
@@ -279,10 +279,12 @@ def get_practice_range(mod):
 def suggest_prac(n, r_comb):
 
     print()
-    print("Suggested dates:")            # 0 = sun
+    print("Suggested dates:")                   # 0 = sun
     weekday = datetime.date.today()
     idx = (weekday.weekday() + 1) % 7           # need weekdays shifted by 1 (wait can we do this with iso or whatever it's called?)
     i = 1
+
+    n += 1                                      # this is for the filming
 
     # for loop n + 1 times
     while(n is not 0):
@@ -292,13 +294,18 @@ def suggest_prac(n, r_comb):
 
         # STORE practice dates + PRINT
         if r_comb[j] is not None:
+            if n == 1:
+                print("\nFILMING: ", end="")
+
             print((weekday + datetime.timedelta(days=i-1)).strftime("%A, %B %d %Y"), end=": ")
             for dt in r_comb[j]:
                 print(dt[0].strftime("%H:%M"), end="-")
                 print(dt[1].strftime("%H:%M"), end=" ")
             print()
-            # print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
+                # print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
             n -= 1
+
+
 
         i += 1
 
