@@ -271,7 +271,7 @@ def get_practice_range(mod):
 
                     start = True
 
-    suggest_prac(5, r_comb)
+    suggest_prac(4, r_comb)
 
     return r_comb
 
