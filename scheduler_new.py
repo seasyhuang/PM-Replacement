@@ -202,7 +202,7 @@ def compare_schedules(t, m):
 # HELPER for generate_practice_times()
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
-def get_practice_range(mod):
+def get_practice_range(n, mod):
     r_comb = []
     print("Weekly Schedule:")
     for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
@@ -271,7 +271,7 @@ def get_practice_range(mod):
 
                     start = True
 
-    suggest_prac(4, r_comb)
+    suggest_prac(n, r_comb)
 
     return r_comb
 
@@ -305,8 +305,6 @@ def suggest_prac(n, r_comb):
                 # print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
             n -= 1
 
-
-
         i += 1
 
         # print(idx)
@@ -315,7 +313,7 @@ def suggest_prac(n, r_comb):
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-def generate_practice_times(master, members_in):
+def generate_practice_times(n, master, members_in):
     print("Generating practice times (all members)...")
 
     print("Members: ", end="")
@@ -346,7 +344,7 @@ def generate_practice_times(master, members_in):
     visualize_week(mod)                                             # Visualizing modified week outside of the method
 
     # CURRENTLY prints instead of returning
-    get_practice_range(mod)                                         # returns range of true (Sun --> Mon)
+    get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
     return mod
 
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
@@ -432,6 +430,22 @@ member_3 = [
 ##########################################
 
 def main():
+
+    try:
+        path = sys.argv[1]
+        if not path.endswith(".xlsx"):
+            print("Please enter valid path to excel file.")
+            exit(1)
+    except:
+        print("Error: path to excel file (argument 1).")
+        exit(1)
+
+    try:
+        n = int(sys.argv[2])
+    except:
+        print("Please specify number of desired practices in second argument.")
+        exit(1)
+
     """ Create grid/master schedule """
     master = schedule('9:00', '22:00', "master")
 
@@ -444,9 +458,12 @@ def main():
     # exit(1)
 
     ###### Testing with excel ######
-    twice = "test_twice.xlsx"
-    members_arr = create_members_from_excel(master, twice)
-    generate_practice_times(master, members_arr)
+    # twice = "test_twice.xlsx"
+    # members_arr = create_members_from_excel(master, twice)
+
+    members_arr = create_members_from_excel(master, path)
+
+    generate_practice_times(n, master, members_arr)
 
     pass
 
