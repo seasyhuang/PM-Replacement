@@ -165,7 +165,7 @@ def modify_schedule(m_sched, dt_se, i):
 
     return m_sched_mod
 
-def member_schedule(master, avails, name):
+def member_schedule(master, avails, name, test):
     m_sched = schedule(master.start, master.end, name)          # Set array/schedule size to same as master
 
     for i in range(len(m_sched.sched)):                         # Modify array with avails
@@ -173,15 +173,12 @@ def member_schedule(master, avails, name):
         # print("day avail: ", end="")
         # print(day_avail)
 
-        print(str(i) + ": ", end="")
-        dt_se = dtconvert.convert_to_datetime(day_avail, master)                  # UPDATE: dt_se is the 2D list ("ranges")
+        if test: print(str(i) + ": ", end="")
+        dt_se = dtconvert.convert_to_datetime(day_avail, master, test)    # UPDATE: dt_se is the 2D list ("ranges")
 
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
-
     # NEXT TODO: Modify to add exceptions - right now exceptions are still None
-    # print("Exceptions: " + str(avails[7]))
-
     return m_sched
 
 # HELPER for generate_practice_times()
@@ -314,7 +311,7 @@ def suggest_prac(n, r_comb):
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
 def generate_practice_times(n, master, members_in):
-    print("Generating practice times (all members)...")
+    print("Generating full house practice times...")
 
     print("Members: ", end="")
     for memb in members_in:
@@ -348,18 +345,33 @@ def generate_practice_times(n, master, members_in):
     return mod
 
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
-# -- idea for option: specify how many practices needed
-def generate_practice_times_2(master, members_in):
-    print("Generating practice times...")
+def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
+    m = max_num_memb_missing
+    print(m)
+    exit(1)
+
+    print("Generating practice times (may not be full house)...")
+
+    print("Members: ", end="")
+    for memb in members_in:
+        print(memb.name, end=", ")
+    print()
+
+    '''
+    method for when it's okay to miss m number of members
+    new variable - max number of members missing
+
+    '''
 
 
 # Returns list of member_schedule objects
-def create_members_from_excel(master, excel_path):
+def create_members_from_excel(master, excel_path, test):
     members_arr = []
 
     twice = pd.read_excel(excel_path, header=1)      # setting the header = 1 removes the title
-    print(twice.head)
-    print(twice.columns)
+    if test:
+        print(twice.head)
+        print(twice.columns)
 
     # for i in range(10):          # CHANGE when TESTING VALUES
     for i, row in twice.iterrows():
@@ -369,68 +381,22 @@ def create_members_from_excel(master, excel_path):
         # from 1 to 7
         for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
             day_header = twice.columns[d+1]
-            print(day_header, end=": ")
+            if test: print(day_header, end=": ")
             day_avail = twice[day_header].iloc[i]
-            print(day_avail)
+            if test: print(day_avail)
             week.append(day_avail)
 
         week.append(None)                           # TODO: this is a placeholder for exceptions (other)
-        print(name)
-        member = member_schedule(master, week, name)
+        if test: print(name)
+        member = member_schedule(master, week, name, test)
 
-        visualize_week(member)
+        if test: visualize_week(member)
         members_arr.append(member)
 
     return members_arr
 
-    # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
-    # member2 = member_schedule(master, member_2, "member 2")
-    # member3 = member_schedule(master, member_3, "member 3")
-
-##########################################
-# move this eventually to a test class
-member_1 = [
-    "10:30-21:00",
-    "Free",
-    "10:30-21:00",
-    "6- 8",
-    "6-8",
-    "1pm-6pm",
-    "1pm-6:00pm",
-    None ]
-member_1_2cases = [
-    "6-8, 9-10",                # 9-10 is interpreted as 9am-10am --> actually this may be the best case
-    "Free",
-    "10:30am-4:00pm, 18:00-21:00",
-    "6- 8",
-    "6-8, 9pm-10pm",
-    "1pm-6pm",
-    "1pm-6:00pm",
-    None ]
-member_2 = [
-    "free",
-    "6pm-9pm",
-    "6pm-8pm",
-    "6pm-8pm",
-    "6pm-8pm",
-    "6pm-8pm",
-    "free",
-    None ]
-member_3 = [
-    "After 6",
-    "After 12h",
-    "After 6h",
-    "After 5",
-    "After 10 am",
-    "Free",
-    "Free except 16h30-18h30",
-    None ]
-
-# var1 = argv[1]
-##########################################
 
 def main():
-
     try:
         path = sys.argv[1]
         if not path.endswith(".xlsx"):
@@ -446,25 +412,18 @@ def main():
         print("Please specify number of desired practices in second argument.")
         exit(1)
 
-    """ Create grid/master schedule """
+     # Create grid/master schedule
     master = schedule('9:00', '22:00', "master")
+    members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
 
-    ###### Testing ######
-    # member1 = member_schedule(master, member_1, "member 1")
-    # member1_2 = member_schedule(master, member_1_2cases, "member 1 with 2 inputs")
-    # member2 = member_schedule(master, member_2, "member 2")
-    # member3 = member_schedule(master, member_3, "Cindy")
-    # visualize_week(member3)
-    # exit(1)
-
-    ###### Testing with excel ######
-    # twice = "test_twice.xlsx"
-    # members_arr = create_members_from_excel(master, twice)
-
-    members_arr = create_members_from_excel(master, path)
-
-    generate_practice_times(n, master, members_arr)
-
+    try:
+        fullhouse = sys.argv[3]
+        max_num_memb_missing = int(sys.argv[4])
+        if fullhouse == 'o':    generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
+        else:                   generate_practice_times(n, master, members_arr)
+    except:
+        # generate_practice_times(n, master, members_arr)           # problem here: when generate_practice_times_2 exits during testing, generate_practice_times starts to run because of the 'except'
+        print()
     pass
 
 if __name__ == '__main__':

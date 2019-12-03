@@ -1,10 +1,10 @@
 import datetime
 
 # HELPER for extracting avails --> datetime time objects
-def convert_to_datetime(str, master):
+def convert_to_datetime(str, master, test):
     ranges = []
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]
-    print(split_string)
+    if test: print(split_string)
 
     # first check: if string is 'not' 'avail', reject
     if (split_string[0].startswith('n') and split_string[1].startswith('av')):
