@@ -348,7 +348,8 @@ def generate_practice_times(n, master, members_in):
 def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     m = max_num_memb_missing
     print(m)
-    exit(1)
+
+    exit(0)
 
     print("Generating practice times (may not be full house)...")
 
@@ -416,14 +417,24 @@ def main():
     master = schedule('9:00', '22:00', "master")
     members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
 
+    # Checks if there is argument 3, 4 - request for optimal schedule (-o) will be ignored without specifying number of missing members (-m)
     try:
         fullhouse = sys.argv[3]
-        max_num_memb_missing = int(sys.argv[4])
-        if fullhouse == 'o':    generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
-        else:                   generate_practice_times(n, master, members_arr)
+        max_num_memb_missing = sys.argv[4]
     except:
-        # generate_practice_times(n, master, members_arr)           # problem here: when generate_practice_times_2 exits during testing, generate_practice_times starts to run because of the 'except'
-        print()
+        generate_practice_times(n, master, members_arr)
+        exit(1)
+
+    if fullhouse == "o":        # this if/else format may need to be changed in the future if there are other options
+        try:
+            max_num_memb_missing = int(max_num_memb_missing)
+            generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
+        except:
+            print("Maximum number of members missing (arg 4) must be an integer.")
+
+    else:
+        print("Invalid: 3rd argument is not 'o'")
+
     pass
 
 if __name__ == '__main__':
