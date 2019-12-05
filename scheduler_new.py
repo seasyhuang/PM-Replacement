@@ -347,16 +347,15 @@ def generate_practice_times(n, master, members_in):
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
 def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     m = max_num_memb_missing
-    print(m)
+    print("Generating best practice times (missing max", m, "member(s))...")
 
-    exit(0)
-
-    print("Generating practice times (may not be full house)...")
-
-    print("Members: ", end="")
-    for memb in members_in:
-        print(memb.name, end=", ")
-    print()
+    # see ipad
+    # exit(0)
+    #
+    # print("Members: ", end="")
+    # for memb in members_in:
+    #     print(memb.name, end=", ")
+    # print()
 
     '''
     method for when it's okay to miss m number of members
@@ -429,6 +428,7 @@ def main():
         try:
             max_num_memb_missing = int(max_num_memb_missing)
             generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
+            # note to self: exit() out of method for testing will still print the exception text
         except:
             print("Maximum number of members missing (arg 4) must be an integer.")
 
