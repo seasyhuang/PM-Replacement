@@ -44,6 +44,33 @@ class schedule:
         self.arr.append(self.start + self.end)
         print(self.arr)
 
+class ex_schedule:      # ex for exclusive, excluding
+    def __init__(self, start, end, num_members):
+        format = '%H:%M'    # hours and minutes only
+        self.start = start
+        self.end = end
+        self.name = "schedule (including non-fullhouse)"
+        if isinstance(start, str):
+            self.start = datetime.datetime.strptime(start, format)       # converts to datettime object
+            self.start = datetime.time(self.start.hour, self.start.minute)
+        if isinstance(end, str):
+            self.end = datetime.datetime.strptime(end, format)
+            self.end = datetime.time(self.end.hour, self.end.minute)
+
+        # get difference
+        t_hr = self.end.hour - self.start.hour
+        t_min = self.end.minute - self.start.minute
+
+        # in 30 min blocks:
+        num_half_hr = int(t_min/30)
+        sched_size = 2 * t_hr + num_half_hr
+        # # in 15 min blocks:
+        # num_q_hr = int(t_min/15)
+        # sched_size = 4 * t_hr + num_q_hr
+
+        # using t_hr and min, generate array size
+        self.sched = [[[True for z in range(num_members)] for x in range(sched_size)] for y in range(7)]
+
 def visualize_day(schedule, day):
     st_t = schedule.start
     e_t = schedule.end
@@ -340,7 +367,6 @@ def generate_practice_times(n, master, members_in):
             except: pass
     visualize_week(mod)                                             # Visualizing modified week outside of the method
 
-    # CURRENTLY prints instead of returning
     get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
     return mod
 
@@ -348,6 +374,9 @@ def generate_practice_times(n, master, members_in):
 def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     m = max_num_memb_missing
     print("Generating best practice times (missing max", m, "member(s))...")
+
+    practice = ex_schedule('9:00', '22:00', 4)
+    visualize_week(practice)            # may need to make a new/simplified visualize_week that just prints number of members who can come to each time slot
 
     # see ipad
     # exit(0)
@@ -429,8 +458,9 @@ def main():
             max_num_memb_missing = int(max_num_memb_missing)
             generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
             # note to self: exit() out of method for testing will still print the exception text
-        except:
+        except Exception as e:
             print("Maximum number of members missing (arg 4) must be an integer.")
+            return e
 
     else:
         print("Invalid: 3rd argument is not 'o'")
