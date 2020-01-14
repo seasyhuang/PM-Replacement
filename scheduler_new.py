@@ -152,6 +152,66 @@ def visualize_week(schedule):
         print("")
     print()
 
+# prints the 3D part of ex_schedule a little nicer
+def visualize_ex_week(ex_schedule):
+    st_t = ex_schedule.start
+    e_t = ex_schedule.end
+    arr3d = ex_schedule.sched
+
+    # Prints an informative banner at the top of the visualization
+    print("\n######### VISUALIZING WEEK: " + ex_schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
+    print(st_t, end=" - ")
+    print(e_t)
+    print(" ")
+
+    diff_hr = e_t.hour - st_t.hour
+    diff_min = e_t.minute - st_t.minute
+    diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
+
+    # Create toprint array that stores time (0) and schedules (1->7)
+    # Not great because index is now off by 1  ¯\_(ツ)_/¯
+    toprint = [ [],
+                [], [], [], [], [], [], [] ]
+    toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
+
+    # Setting up the time on the very left as toprint[0]
+    for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+        diff_i = datetime.timedelta(minutes=30*i)
+        comb = dtdt + diff_i
+        comb = comb.time()
+        toprint[0].append(comb.strftime("%H:%M"))           # appends without seconds
+
+    # Saving all the stuff in arr2d into toprint (since we already have the information)
+    for day_i in range(len(arr3d)):
+        # Ex: sunday in arr2d is 0, save at 0+1 in toprint
+        toprint[day_i+1] = arr3d[day_i]
+
+    # Right column of times:
+    toprint.append(toprint[0])
+    print(toprint)
+    # need to separate first and last part of toprint into different varts, rewrite the printing part of the method
+    print(toprint[1][1])
+    print(len(toprint[1][1]))
+
+    # The actual printing part of this method
+    # # TODO: REWRITE THIS
+    # HEADER:
+    print("#####", end=" ")
+    for d in toprintdays: print("(" + d + ") ", end="")
+    print("#####")
+    # SCHEDULE:
+    for i in range(len(toprint[0])):
+        for j in range(len(toprint)):
+            for t in range(len(toprint[0][0])):
+                temp = toprint[j][i][t]
+                if temp is True: temp = "   "
+                elif temp is False: temp = " x "
+                else: temp = str(toprint[j][i]) #   + "\t"
+            print(temp, end=" ")
+        print("")
+    print()
+
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_se, i):
     m_sched_mod = m_sched
@@ -348,10 +408,6 @@ def generate_practice_times(n, master, members_in):
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
 
-    # # for testing, so we can see the schedules
-    # for m in members_in:
-    #     visualize_week(m)
-
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
     # Use compare_schedules helper to determine free times
@@ -375,16 +431,26 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     m = max_num_memb_missing
     print("Generating best practice times (missing max", m, "member(s))...")
 
-    practice = ex_schedule('9:00', '22:00', 4)
-    visualize_week(practice)            # may need to make a new/simplified visualize_week that just prints number of members who can come to each time slot
+    practice = ex_schedule('9:00', '22:00', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
 
-    # see ipad
-    # exit(0)
-    #
-    # print("Members: ", end="")
-    # for memb in members_in:
-    #     print(memb.name, end=", ")
-    # print()
+    print("Members: ", end="")
+    for memb in members_in:
+        print(memb.name, end=", ")
+    print()
+
+    #  members - list of all members (as member_schedule objects)
+    print("Schedule set from: " + str(master.start) + " - " + str(master.end))
+
+    # for testing, so we can see the schedules
+    for m in members_in:
+        # visualize_week(m)
+        print("", end="")
+
+    visualize_ex_week(practice)
+    # may need to make a new/simplified visualize_week that just prints number of members who can come to each time slot
+
+    ### IMPLEMENTATION 2: ###
+    ###  ACCEPTS NON-FULL HOUSE PRACTICES  ###
 
     '''
     method for when it's okay to miss m number of members
