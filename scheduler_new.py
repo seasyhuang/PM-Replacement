@@ -191,11 +191,13 @@ def visualize_ex_week(ex_schedule):
     toprint.append(toprint[0])
     print(toprint)
     # need to separate first and last part of toprint into different varts, rewrite the printing part of the method
-    print(toprint[1][1])
+    print(toprint[8])
+    print(len(toprint[0]))
+    exit()
     print(len(toprint[1][1]))
 
     # The actual printing part of this method
-    # # TODO: REWRITE THIS
+    # # TODO: REWRITE THIS - see ipad
     # HEADER:
     print("#####", end=" ")
     for d in toprintdays: print("(" + d + ") ", end="")
