@@ -170,49 +170,46 @@ def visualize_ex_week(ex_schedule):
 
     # Create toprint array that stores time (0) and schedules (1->7)
     # Not great because index is now off by 1  ¯\_(ツ)_/¯
-    toprint = [ [],
-                [], [], [], [], [], [], [] ]
+    times = []
+    days = [ [], [], [], [], [], [], [] ]
     toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
 
-    # Setting up the time on the very left as toprint[0]
+    # setting up times in "times" array
     for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
         dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
         diff_i = datetime.timedelta(minutes=30*i)
         comb = dtdt + diff_i
         comb = comb.time()
-        toprint[0].append(comb.strftime("%H:%M"))           # appends without seconds
+        times.append(comb.strftime("%H:%M"))           # appends without seconds
 
     # Saving all the stuff in arr2d into toprint (since we already have the information)
     for day_i in range(len(arr3d)):
-        # Ex: sunday in arr2d is 0, save at 0+1 in toprint
-        toprint[day_i+1] = arr3d[day_i]
-
-    # Right column of times:
-    toprint.append(toprint[0])
-    print(toprint)
-    # need to separate first and last part of toprint into different varts, rewrite the printing part of the method
-    print(toprint[8])
-    print(len(toprint[0]))
-    exit()
-    print(len(toprint[1][1]))
+        days[day_i] = arr3d[day_i]
 
     # The actual printing part of this method
-    # # TODO: REWRITE THIS - see ipad
     # HEADER:
     print("#####", end=" ")
     for d in toprintdays: print("(" + d + ") ", end="")
     print("#####")
     # SCHEDULE:
-    for i in range(len(toprint[0])):
-        for j in range(len(toprint)):
-            for t in range(len(toprint[0][0])):
-                temp = toprint[j][i][t]
-                if temp is True: temp = "   "
-                elif temp is False: temp = " x "
-                else: temp = str(toprint[j][i]) #   + "\t"
-            print(temp, end=" ")
-        print("")
-    print()
+    for i in range(len(times)):
+        print(times[i], end=" ")
+        for d in range(len(days)):
+            # for m in range(len(days[d])):
+            #     m = days[d][m]
+            #     print("[", end="")
+                # for mem in m:
+                #     if mem == True:
+                #         print("X", end="")
+                #     if mem == False:
+                #         print(" ", end="")
+                # print("]", end="")
+            print(d, end="")
+        print(" ", end=times[i])
+        print()
+    exit()
+
+    # TODO: update this 
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_se, i):
