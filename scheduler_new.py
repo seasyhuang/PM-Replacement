@@ -189,27 +189,29 @@ def visualize_ex_week(ex_schedule):
     # The actual printing part of this method
     # HEADER:
     print("#####", end=" ")
-    for d in toprintdays: print("(" + d + ") ", end="")
+    for tpd in toprintdays: print("(" + tpd + ") ", end="")
     print("#####")
     # SCHEDULE:
-    for i in range(len(times)):
-        print(times[i], end=" ")
-        for d in range(len(days)):
-            # for m in range(len(days[d])):
-            #     m = days[d][m]
-            #     print("[", end="")
-                # for mem in m:
-                #     if mem == True:
-                #         print("X", end="")
-                #     if mem == False:
-                #         print(" ", end="")
-                # print("]", end="")
-            print(d, end="")
+    for i in range(len(times)):                 # 0-26 (9:00)
+        print(times[i], end="  ")
+        for m in range(len(days[0])):           # 0-26 ([T,T,T])
+            for d in range(len(days)):          # 0-6 (sun)
+                array = days[d][m]
+                print("[", end="")
+                for am in array:
+                    if am is True:  print("*", end="")
+                    elif am is False:  print(" ", end="")
+                    else:
+                        print("error")
+                        exit()
+                print("]", end="")
+            break
+
         print(" ", end=times[i])
         print()
     exit()
 
-    # TODO: update this 
+    # TODO next: update this
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_se, i):
