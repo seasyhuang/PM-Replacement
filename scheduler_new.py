@@ -186,14 +186,24 @@ def visualize_ex_week(ex_schedule):
     for day_i in range(len(arr3d)):
         days[day_i] = arr3d[day_i]
 
-    # The actual printing part of this method
+    # The actual printing part of this method:
     # HEADER:
     print("#####", end=" ")
-    for tpd in toprintdays: print("(" + tpd + ") ", end="")
-    print("#####")
+    for tpd in toprintdays:
+        num_space = len(days[0][1])-1
+        half_1 = int(num_space/2)
+        half_2 = num_space-half_1
+        print("(", end="")
+        for s in range(half_1):
+            print(" ", end="")
+        print(tpd, end="")
+        for t in range(half_2):
+            print(" ", end="")
+        print(")", end="")
+    print(" #####")
     # SCHEDULE:
     for i in range(len(times)):                 # 0-26 (9:00)
-        print(times[i], end="  ")
+        print(times[i], end=" ")
         for m in range(len(days[0])):           # 0-26 ([T,T,T])
             for d in range(len(days)):          # 0-6 (sun)
                 array = days[d][m]
@@ -209,9 +219,6 @@ def visualize_ex_week(ex_schedule):
 
         print(" ", end=times[i])
         print()
-    exit()
-
-    # TODO next: update this
 
 # HELPER for changing member schedule
 def modify_schedule(m_sched, dt_se, i):
@@ -448,7 +455,6 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
         print("", end="")
 
     visualize_ex_week(practice)
-    # may need to make a new/simplified visualize_week that just prints number of members who can come to each time slot
 
     ### IMPLEMENTATION 2: ###
     ###  ACCEPTS NON-FULL HOUSE PRACTICES  ###
