@@ -451,13 +451,16 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     # for testing, so we can see the schedules
     for m in members_in:
-        # visualize_week(m)
+        visualize_week(m)
         print("", end="")
 
-    visualize_ex_week(practice)
+    #### IMPLEMENTATION 2: ####
+    #  WITH N MISSING MEMBERS #
+    #  Can't use compare_schedules helper to determine free times
 
-    ### IMPLEMENTATION 2: ###
-    ###  ACCEPTS NON-FULL HOUSE PRACTICES  ###
+    # NEXT TODO: see ipad
+
+    visualize_ex_week(practice)
 
     '''
     method for when it's okay to miss m number of members
