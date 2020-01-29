@@ -297,6 +297,7 @@ def compare_schedules(t, m):
 def get_practice_range(n, mod):
     r_comb = []
     print("Weekly Schedule:")
+
     for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
 
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
@@ -312,6 +313,9 @@ def get_practice_range(n, mod):
             if bool is False and switch == 1:
                 switch = 0
                 true_range.append(j)
+            elif j == len(schedlist)-1 and bool is True:    # for the last timeslot
+                true_range.append(j)
+
         if len(true_range) == 1:
             true_range.append(len(schedlist))
 
