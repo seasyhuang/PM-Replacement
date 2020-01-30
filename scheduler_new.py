@@ -411,14 +411,25 @@ def suggest_prac(n, r_comb):
 # IMPLEMENTATION 1: return times all members free
 def generate_practice_times(n, master, members_in):
     print("Generating full house practice times...")
+    text = input("Do you want to view member schedules? [y/n, default is no] ")
+    if text is "y":
+        view_memb_sched = True
+    else: view_memb_sched = False
 
     print("Members: ", end="")
     for memb in members_in:
-        print(memb.name, end=", ")
+        if view_memb_sched:
+            visualize_week(memb)
+        else:
+            print(memb.name, end=", ")
     print()
 
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
+
+    text = input("Visualize comparison? [y/n] ")
+    if text is "y": view_comp_sched = True
+    else: view_comp_sched = False
 
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
@@ -427,11 +438,13 @@ def generate_practice_times(n, master, members_in):
     for i, m in enumerate(members_in):
         if mod is None:
             mod = compare_schedules(members_in[0], members_in[1])
-            visualize_week(mod)
+            if view_comp_sched:
+                visualize_week(mod)
         else:
             try:
                 mod = compare_schedules(mod, members_in[i+1])             # Why this doesn't feel right lol
-                visualize_week(mod)
+                if view_comp_sched:
+                    visualize_week(mod)
             except: pass
     visualize_week(mod)                                             # Visualizing modified week outside of the method
 
