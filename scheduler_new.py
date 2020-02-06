@@ -153,7 +153,7 @@ def visualize_week(schedule):
     print()
 
 # prints the 3D part of ex_schedule a little nicer
-def visualize_ex_week(ex_schedule):
+def visualize_ex_week(ex_schedule, membs):
     st_t = ex_schedule.start
     e_t = ex_schedule.end
     arr3d = ex_schedule.sched
@@ -162,6 +162,7 @@ def visualize_ex_week(ex_schedule):
     print("\n######### VISUALIZING WEEK: " + ex_schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
     print(st_t, end=" - ")
     print(e_t)
+    print("Members: "+ membs[:-2])
     print(" ")
 
     diff_hr = e_t.hour - st_t.hour
@@ -169,7 +170,7 @@ def visualize_ex_week(ex_schedule):
     diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
 
     # Create toprint array that stores time (0) and schedules (1->7)
-    # Not great because index is now off by 1  ¯\_(ツ)_/¯
+    # index is now off by 1  ¯\_(ツ)_/¯
     times = []
     days = [ [], [], [], [], [], [], [] ]
     toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
@@ -209,8 +210,8 @@ def visualize_ex_week(ex_schedule):
                 array = days[d][m]
                 print("[", end="")
                 for am in array:
-                    if am is True:  print("*", end="")
-                    elif am is False:  print(" ", end="")
+                    if am is True:  print("-", end="")
+                    elif am is False:  print("*", end="")
                     else:
                         print("error")
                         exit()
@@ -290,6 +291,8 @@ def compare_schedules(t, m):
             free = timeslot & m.sched[d][i]
             mod.sched[d][i] = free
     return mod
+
+# def compare_schedules_2(t, m):
 
 # HELPER for generate_practice_times()
 # returns all potential practice times in a range (per day)
@@ -411,18 +414,17 @@ def suggest_prac(n, r_comb):
 # IMPLEMENTATION 1: return times all members free
 def generate_practice_times(n, master, members_in):
     print("Generating full house practice times...")
-    text = input("Do you want to view member schedules? [y/n, default is no] ")
-    if text is "y":
-        view_memb_sched = True
-    else: view_memb_sched = False
-
-    print("Members: ", end="")
+    membs = ""
     for memb in members_in:
-        if view_memb_sched:
-            visualize_week(memb)
-        else:
-            print(memb.name, end=", ")
-    print()
+        membs += memb.name + ", "
+    print("Members: "+ membs[:-2])
+
+    text = input("View member schedules? [y/n, default is no] ")
+
+    # See the schedules
+    if text is "y":
+        for m in members_in:
+            visualize_week(m)
 
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
@@ -458,26 +460,39 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     practice = ex_schedule('9:00', '22:00', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
 
-    print("Members: ", end="")
+    membs = ""
     for memb in members_in:
-        print(memb.name, end=", ")
-    print()
+        membs += memb.name + ", "
+    print("Members: "+ membs[:-2])
 
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
 
-    # for testing, so we can see the schedules
-    for m in members_in:
-        visualize_week(m)
-        print("", end="")
+    print("Generating full house practice times...")
+    text = input("View member schedules? [y/n, default is no] ")
+
+    # See the schedules
+    if text is "y":
+        for m in members_in:
+            visualize_week(m)
 
     #### IMPLEMENTATION 2: ####
     #  WITH N MISSING MEMBERS #
     #  Can't use compare_schedules helper to determine free times
+    for i, m in enumerate(members_in):
+        # print(practice.sched[0]) # monday
+        # print(practice.sched[0][0]) # monday at 9
+        # print(practice.sched[0][0][i]) # monday at 9 for first member
+        # print(m.sched[0]) # member monday
+        # print(m.sched[0][0]) # member monday at 9
 
+        practice.sched[0][0][i] = m.sched[0][0]
+
+        # exit()
+        # visualize_ex_week(practice, membs)
     # NEXT TODO: see ipad
+    visualize_ex_week(practice, membs)
 
-    visualize_ex_week(practice)
 
     '''
     method for when it's okay to miss m number of members
