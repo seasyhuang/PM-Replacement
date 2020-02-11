@@ -198,25 +198,20 @@ def visualize_ex_week(ex_schedule, membs):
         print(")", end="")
     print(" #####")
     # SCHEDULE:
-    for i in range(len(times)):                 # 0-26 (9:00)
+    for i in range(len(times)):                 # i: 0-26 (9:00) = m: 0-26 ([T,T,T])
         print(times[i], end=" ")
-        for m in range(len(days[0])):           # m: 0-26 ([T,T,T])
-            for d in range(len(days)):          # d: 0-6 (sun)
-                array = days[d][m]
-                # import pdb; pdb.set_trace()
-                print("[", end="")
-                for am in array:
-                    if am is True:  print("-", end="")
-                    elif am is False:  print("*", end="")
-                    else:
-                        print("error")
-                        exit()
-                print("]", end="")
-            # print()
-            print(" ", end=times[i])
-            break
-            # the break is breaking this
-
+        for d in range(len(days)):          # d: 0-6 (sun)
+            array = days[d][i]
+            # import pdb; pdb.set_trace()
+            print("[", end="")
+            for am in array:
+                if am is True:  print("-", end="")
+                elif am is False:  print("*", end="")
+                else:
+                    print("error")
+                    exit()
+            print("]", end="")
+        print(" ", end=times[i])
         print()
 
 # HELPER for changing member schedule
@@ -434,7 +429,7 @@ def generate_practice_times(n, master, members_in):
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
     # Use compare_schedules helper to determine free times
-    mod = None                                                      # is this the first schedule
+    mod = None
     for i, m in enumerate(members_in):
         if mod is None:
             mod = compare_schedules(members_in[0], members_in[1])
@@ -442,11 +437,11 @@ def generate_practice_times(n, master, members_in):
                 visualize_week(mod)
         else:
             try:
-                mod = compare_schedules(mod, members_in[i+1])             # Why this doesn't feel right lol
+                mod = compare_schedules(mod, members_in[i+1])
                 if view_comp_sched:
                     visualize_week(mod)
             except: pass
-    visualize_week(mod)                                             # Visualizing modified week outside of the method
+    visualize_week(mod)                                                # visualizing modified week outside of the method
 
     get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
     return mod
@@ -477,11 +472,9 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     #### IMPLEMENTATION 2: ####
     #  WITH N MISSING MEMBERS #
     for i, m in enumerate(members_in):
-        print(i, m)
-        for hr in range(len(practice.sched[0])):
-            # print(hr, m.sched[0][hr])
-            practice.sched[0][hr][i] = m.sched[0][hr]
-            print(practice.sched[0][hr])
+        for d in range(7):                                  # d: days of the week (0-6)
+            for hr in range(len(practice.sched[0])):        # hr: hours in the day
+                practice.sched[d][hr][i] = m.sched[d][hr]
 
         # print(practice.sched[0]) # monday
         # print(practice.sched[0][0]) # monday at 9
@@ -489,11 +482,11 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
         # print(m.sched[0]) # member monday
         # print(m.sched[0][0]) # member monday at 9
 
-
-        # exit()
-        # visualize_ex_week(practice, membs)
-    # NEXT TODO: see ipad
     visualize_ex_week(practice, membs)
+
+    # next: new method get_practice_range to return practice range with max_num_memb_missing
+    # get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
+    # return mod
 
 
     '''
