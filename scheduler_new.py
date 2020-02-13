@@ -367,6 +367,29 @@ def get_practice_range(n, mod):
 
     return r_comb
 
+def missing_memb_practices(m, ex_schedule, master):
+    
+    print(ex_schedule)
+    print(m)
+
+    name = "Missing " + m + "members"
+    sched = member_schedule(master, ["free" for i in range(7)], name, False)
+    exit()
+
+
+    mod = copy.copy(t)
+    mod.name = str(t.name) + " + " + str(m.name)
+
+    for d, day in enumerate(mod.sched):         # Ah yes enumerate is a thing
+        for i, timeslot in enumerate(day):
+            # Check if both m and t free at this time (AND)
+            free = timeslot & m.sched[d][i]
+            mod.sched[d][i] = free
+    return mod
+
+    exit()
+    return sched
+
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
 def suggest_prac(n, r_comb):
 
@@ -485,16 +508,15 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     visualize_ex_week(practice, membs)
 
     # next: new method get_practice_range to return practice range with max_num_memb_missing
-    # get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
+    mod_practice = missing_memb_practices(practice, m, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
+    get_practice_range(n, mod_practice)                                         # returns range of true (Sun --> Mon)
     # return mod
-
 
     '''
     method for when it's okay to miss m number of members
     new variable - max number of members missing
 
     '''
-
 
 # Returns list of member_schedule objects
 def create_members_from_excel(master, excel_path, test):
