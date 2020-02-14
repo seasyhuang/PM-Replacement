@@ -11,6 +11,7 @@ import pprint
 import copy
 import calendar
 import pandas as pd
+import numpy as np
 
 class schedule:
     def __init__(self, start, end, name):
@@ -367,28 +368,17 @@ def get_practice_range(n, mod):
 
     return r_comb
 
-def missing_memb_practices(m, ex_schedule, master):
-    
-    print(ex_schedule)
-    print(m)
+def missing_memb_practices(ex_schedule, m, master):
+    name = "Missing " + str(m) + " members"
+    mod_sched = member_schedule(master, ["free" for i in range(7)], name, False)
 
-    name = "Missing " + m + "members"
-    sched = member_schedule(master, ["free" for i in range(7)], name, False)
-    exit()
-
-
-    mod = copy.copy(t)
-    mod.name = str(t.name) + " + " + str(m.name)
-
-    for d, day in enumerate(mod.sched):         # Ah yes enumerate is a thing
+    for d, day in enumerate(ex_schedule.sched):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
         for i, timeslot in enumerate(day):
-            # Check if both m and t free at this time (AND)
-            free = timeslot & m.sched[d][i]
-            mod.sched[d][i] = free
-    return mod
-
-    exit()
-    return sched
+            if (np.sum(timeslot) >= (len(timeslot) - m)):                     # counts number of True
+                mod_sched.sched[d][i] = True
+            else:
+                mod_sched.sched[d][i] = False
+    return mod_sched
 
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
 def suggest_prac(n, r_comb):
@@ -471,8 +461,8 @@ def generate_practice_times(n, master, members_in):
 
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
 def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
-    m = max_num_memb_missing
-    print("Generating best practice times (missing max", m, "member(s))...")
+    mn = max_num_memb_missing
+    print("Generating best practice times (missing max", mn, "member(s))...")
 
     practice = ex_schedule('9:00', '22:00', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
 
@@ -508,7 +498,8 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     visualize_ex_week(practice, membs)
 
     # next: new method get_practice_range to return practice range with max_num_memb_missing
-    mod_practice = missing_memb_practices(practice, m, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
+    mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
+    visualize_week(mod_practice)
     get_practice_range(n, mod_practice)                                         # returns range of true (Sun --> Mon)
     # return mod
 
