@@ -501,7 +501,7 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
     visualize_week(mod_practice)
     get_practice_range(n, mod_practice)                                         # returns range of true (Sun --> Mon)
-    # return mod
+    # next todo: get_practice_range printing who's missing
 
     '''
     method for when it's okay to miss m number of members
@@ -518,7 +518,7 @@ def create_members_from_excel(master, excel_path, test):
         print(twice.head)
         print(twice.columns)
 
-    # for i in range(10):          # CHANGE when TESTING VALUES
+    # for i in range(2):          # CHANGE when TESTING VALUES
     for i, row in twice.iterrows():
         week = []
         name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
@@ -542,6 +542,7 @@ def create_members_from_excel(master, excel_path, test):
 
 
 def main():
+
     try:
         path = sys.argv[1]
         if not path.endswith(".xlsx"):
@@ -557,9 +558,14 @@ def main():
         print("Please specify number of desired practices in second argument.")
         exit(1)
 
-     # Create grid/master schedule
+    # Create grid/master schedule
     master = schedule('9:00', '22:00', "master")
-    members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
+    try:
+        members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
+    except:
+        members_arr = create_members_from_excel(master, path, True)         # 3rd var for testing: if test=True, will print everything
+        print("Error reading excel.")
+        exit()
 
     # Checks if there is argument 3, 4 - request for optimal schedule (-o) will be ignored without specifying number of missing members (-m)
     try:

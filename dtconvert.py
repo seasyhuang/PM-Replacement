@@ -2,8 +2,20 @@ import datetime
 
 # HELPER for extracting avails --> datetime time objects
 def convert_to_datetime(str, master, test):
+    if (str is None) or (isinstance(str, float)):
+        print("ASSUMING NO INPUT is FREE ", end="")
+        str = "free"
     ranges = []
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]
+    try:
+        split_new = []
+        for split in split_string:
+            if "-" in split:
+                _split = split.split('-')
+                split_new += _split
+            else: split_new.append(split)
+        split_string = split_new
+    except: pass
     if test: print(split_string)
 
     # first check: if string is 'not' 'avail', reject
@@ -33,6 +45,7 @@ def convert_to_datetime(str, master, test):
 
         return ranges
 
+
     # Does the string have "free"
     if "free" in split_string:
         if len(split_string) > 1:
@@ -44,6 +57,7 @@ def convert_to_datetime(str, master, test):
     # no 'free':
     else:
         try:                                                # 1) just avails, 'after 5'
+            # print("here")
             ranges = bef_betw_aft(split_string, master)
             return ranges
         except:                                             # 2) not avail
@@ -119,6 +133,17 @@ def bef_betw_aft(list, master):
     converted = []
     id = list[0].lower().strip()            # after, before, between
 
+    if id.isdigit():
+        converted.append([
+            convert(list[0]),
+            convert(list[1])
+            ])
+
+    if id == 'from':
+        print("need to add this: from")
+        exit()
+
+
     if id == 'after':
         converted.append([
             convert(list[1]),
@@ -132,30 +157,19 @@ def bef_betw_aft(list, master):
             ])
 
     if id == 'between':
-        try:
-            se = extract_again(list[1:])
-        except:
-            print("error running extract_again()")
-            exit(1)
-
+        # print("between")
         converted.append([
-            convert(se[0]),
-            convert(se[1])
+            convert(list[1]),
+            convert(list[2])
             ])
 
     if id == 'except':
-        try:
-            se = extract_again(list[1:])
-        except:
-            print("error running extract_again()")
-            exit(1)
-
         converted.append([
             convert(master.start.strftime("%I:%M%p")),
-            convert(se[0])
+            convert(list[1])
             ])
         converted.append([
-            convert(se[1]),
+            convert(list[2]),
             convert(master.end.strftime("%I:%M%p"))
             ])
 
