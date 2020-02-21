@@ -291,12 +291,17 @@ def compare_schedules(t, m):
 # HELPER for generate_practice_times()
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
-def get_practice_range(n, mod):
+def get_practice_range(n, mod, ex_pract, members_in):
+
+    members = []                                            # array to use in whos_missing
+    for memb in members_in:
+        members.append(memb.name)
+
+    skip = False
     r_comb = []
     print("Weekly Schedule:")
 
     for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
-
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
 
         true_range = []                                     # saves indices
@@ -327,9 +332,10 @@ def get_practice_range(n, mod):
             comb = comb.time()
             true_range_dt.append(comb)
 
-        if not true_range_dt: # Catch for days with no practice times
-            print("None")
+        if not true_range_dt:                           # Catch for days with no practice times
+            print("None", end=" ")
             r_comb.append(None)
+            skip = True
             pass
 
         start = True                    # Boolean switch for start - end
@@ -342,7 +348,7 @@ def get_practice_range(n, mod):
         for idj, j in enumerate(true_range_dt):
             if single_range is True:
                 t_r_comb = [[true_range_dt[0], true_range_dt[1]]]
-                print(str(true_range_dt[0].strftime("%H:%M")) + "-" + str(true_range_dt[1].strftime("%H:%M")))
+                print(str(true_range_dt[0].strftime("%H:%M")) + "-" + str(true_range_dt[1].strftime("%H:%M")), end=" ")
                 r_comb.append(t_r_comb)
                 break
             else:
@@ -364,12 +370,62 @@ def get_practice_range(n, mod):
 
                     start = True
 
+        if(skip): print()
+        elif ex_pract is not False:
+            print("| missing: ", whos_missing(schedlist, ex_pract.sched[i], members))            # compare mod to ex_pract and see who's missing
+        else: print()
+
     suggest_prac(n, r_comb)
 
     return r_comb
 
+def whos_missing(mods, day, members):
+    missing = []
+    m_time = []
+
+    # print(day) # sunday (for i=0)
+    # print(day[0]) # sunday at 9
+    # print(day[0][m]) # sunday at 9 for first member
+
+    # who's missing, when
+    for t, time in enumerate(mods):                                             # compare schedlist[i = 0-26]
+        if time is True:
+            f = [i for i, bool in enumerate(day[t]) if bool==False]             # if FREE, check if day[0 to 26] FREE (f = [] if no False)
+            if f:                                                               # if NOT free, f gives to get m index
+                for m in f:
+                    m_time = [members[m], t]
+                    missing.append(m_time)
+    # print(missing)
+
+    # clean missing array
+    clean = []
+    if missing:
+        for m in missing:
+            if any(m[0] in n for n in clean):
+                clean[next((i for i, sublist in enumerate(clean) if m[0] in sublist))].append(m[1])
+            else:
+                clean.append(m)
+    # print(clean)
+
+    if clean:
+        s = ""
+        for m in clean:
+            s += m[0] + " (" + gimme_time(master.start, m[1]) + "-" + gimme_time(master.start, m[-1]+1) + "), "
+        return s[:-2]
+    else:
+        return
+
+
+def gimme_time(st_t, i):
+    dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+    diff_i = datetime.timedelta(minutes=30*i)
+    comb = dtdt + diff_i
+    comb = comb.time()
+    return comb.strftime("%H:%M")          # appends without seconds
+
+
 def missing_memb_practices(ex_schedule, m, master):
-    name = "Missing " + str(m) + " members"
+    name = "Missing " + str(m) + " member(s)"
     mod_sched = member_schedule(master, ["free" for i in range(7)], name, False)
 
     for d, day in enumerate(ex_schedule.sched):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
@@ -456,7 +512,7 @@ def generate_practice_times(n, master, members_in):
             except: pass
     visualize_week(mod)                                                # visualizing modified week outside of the method
 
-    get_practice_range(n, mod)                                         # returns range of true (Sun --> Mon)
+    get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
     return mod
 
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
@@ -497,10 +553,9 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     visualize_ex_week(practice, membs)
 
-    # next: new method get_practice_range to return practice range with max_num_memb_missing
     mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
     visualize_week(mod_practice)
-    get_practice_range(n, mod_practice)                                         # returns range of true (Sun --> Mon)
+    get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
     # next todo: get_practice_range printing who's missing
 
     '''
@@ -540,6 +595,8 @@ def create_members_from_excel(master, excel_path, test):
 
     return members_arr
 
+# master is global fuck this
+master = schedule('9:00', '22:00', "master")
 
 def main():
 
@@ -558,8 +615,8 @@ def main():
         print("Please specify number of desired practices in second argument.")
         exit(1)
 
-    # Create grid/master schedule
-    master = schedule('9:00', '22:00', "master")
+    # # Create grid/master schedule
+    # master = schedule('9:00', '22:00', "master")
     try:
         members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
     except:
