@@ -567,6 +567,7 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 # Returns list of member_schedule objects
 def create_members_from_excel(master, excel_path, test):
     members_arr = []
+    others = [["",""],["*** OTHER ***", ""]]
 
     twice = pd.read_excel(excel_path, header=1)      # setting the header = 1 removes the title
     if test:
@@ -579,12 +580,18 @@ def create_members_from_excel(master, excel_path, test):
         name = twice['NAME'].iloc[i]                # same as twice.columns[0]. TODO: maybe put a check on this?
         # print(twice.columns[0])
         # from 1 to 7
-        for d in range(7):                          # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
+        for d in range(7):
             day_header = twice.columns[d+1]
             if test: print(day_header, end=": ")
             day_avail = twice[day_header].iloc[i]
             if test: print(day_avail)
             week.append(day_avail)
+
+        # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
+        # for now: i = 8
+        day_header = twice.columns[7+1]
+        other = twice[day_header].iloc[i]
+        others.append([name.upper() + ":\t", other])
 
         week.append(None)                           # TODO: this is a placeholder for exceptions (other)
         if test: print(name)
@@ -593,7 +600,7 @@ def create_members_from_excel(master, excel_path, test):
         if test: visualize_week(member)
         members_arr.append(member)
 
-    return members_arr
+    return members_arr, others
 
 # master is global fuck this
 master = schedule('9:00', '22:00', "master")
@@ -618,9 +625,9 @@ def main():
     # # Create grid/master schedule
     # master = schedule('9:00', '22:00', "master")
     try:
-        members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
+        members_arr, others = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
     except:
-        members_arr = create_members_from_excel(master, path, True)         # 3rd var for testing: if test=True, will print everything
+        members_arr, others = create_members_from_excel(master, path, True)         # 3rd var for testing: if test=True, will print everything
         print("Error reading excel.")
         exit()
 
@@ -630,12 +637,15 @@ def main():
         max_num_memb_missing = sys.argv[4]
     except:
         generate_practice_times(n, master, members_arr)
+        for o in others: print(o[0], o[1].replace("\n", "; "))
         exit(1)
 
     if fullhouse == "o":        # this if/else format may need to be changed in the future if there are other options
         try:
             max_num_memb_missing = int(max_num_memb_missing)
             generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
+            for o in others: print(o[0], o[1].replace("\n", "; "))
+
             # note to self: exit() out of method for testing will still print the exception text
         except Exception as e:
             print("Maximum number of members missing (arg 4) must be an integer.")
