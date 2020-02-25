@@ -130,6 +130,8 @@ def bef_betw_aft(list, master):
     # times = bef_betw_aft(split_string, master)
     # ranges.append([convert(times[0]), convert(times[1])])
 
+    # how to tackle "free 6-9"?
+
     converted = []
     id = list[0].lower().strip()            # after, before, between
 
@@ -156,7 +158,7 @@ def bef_betw_aft(list, master):
             convert(list[1])
             ])
 
-    if id == 'between':
+    if id == 'between' :
         # print("between")
         converted.append([
             convert(list[1]),

@@ -9,6 +9,7 @@ import dtconvert
 import datetime
 import pprint
 import copy
+import math
 import calendar
 import pandas as pd
 import numpy as np
@@ -591,6 +592,9 @@ def create_members_from_excel(master, excel_path, test):
         # for now: i = 8
         day_header = twice.columns[7+1]
         other = twice[day_header].iloc[i]
+        try:
+            if math.isnan(other):   other = '-'
+        except: pass
         others.append([name.upper() + ":\t", other])
 
         week.append(None)                           # TODO: this is a placeholder for exceptions (other)
