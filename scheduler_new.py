@@ -371,7 +371,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
 
                     start = True
 
-        if(skip): print()
+        if(): print()
         elif ex_pract is not False:
             print("| missing: ", whos_missing(schedlist, ex_pract.sched[i], members))            # compare mod to ex_pract and see who's missing
         else: print()
