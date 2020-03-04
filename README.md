@@ -14,3 +14,12 @@ answers to questions that i had:
 - GUIs: https://www.tutorialspoint.com/python/python_gui_programming.htm
 
 - added 2 lines asking for user input during generate_practice_times() (full house implementation) to reduce amount of stuff printed on screen
+
+## Refactor
+1. `Schedule class` renamed (capitalized)
+2. `schedule.sched` is now `Schedule.array`
+3. Defined new method for calculating `Schedule.array` - [Calling a class function inside of __init__](https://stackoverflow.com/questions/12646326/calling-a-class-function-inside-of-init)
+
+
+[Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+[PEP 8](https://www.python.org/dev/peps/pep-0008/)

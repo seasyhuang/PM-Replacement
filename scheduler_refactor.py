@@ -14,19 +14,21 @@ import calendar
 import pandas as pd
 import numpy as np
 
-class schedule:
-    def __init__(self, start, end, name):
-        format = '%H:%M'    # Time is in hours and minutes only
-        self.start = start  # Schedule start time (ex. 9:00)
-        self.end = end      # Schedule end time (ex. 22:00)
-        self.name = name    # Schedule name (ex. member name, final schedule, etc)
+class Schedule:
+    def __init__(self, start, end, name):               # Constructor
+        self.start = start                              # Schedule start time (ex. 9:00)
+        self.end = end                                  # Schedule end time (ex. 22:00)
+        self.name = name                                # Schedule name (ex. member name, final schedule, etc)
+        self.array = self.create_array(start, end)      # Schedule array (2D array of days of week (7) x half hour blocks)
 
+    # mid-REFACTOR - fix comments
+    def create_array(self, start, end):
         # Converts start/end time to datettime if entered as string
         if isinstance(start, str):
-            self.start = datetime.datetime.strptime(start, format)
+            self.start = datetime.datetime.strptime(start, '%H:%M')
             self.start = datetime.time(self.start.hour, self.start.minute)
         if isinstance(end, str):
-            self.end = datetime.datetime.strptime(end, format)
+            self.end = datetime.datetime.strptime(end, '%H:%M')
             self.end = datetime.time(self.end.hour, self.end.minute)
 
         # get difference
@@ -41,12 +43,12 @@ class schedule:
         # sched_size = 4 * t_hr + num_q_hr
 
         # using t_hr and min, generate array size
-        self.sched = [[True for x in range(sched_size)] for y in range(7)]
+        return [[True for x in range(sched_size)] for y in range(7)]
 
-    def mod_sched(self):
-        # do we even need this method
-        self.arr.append(self.start + self.end)
-        print(self.arr)
+    # Instead of visualize schedule method, use method inside Schedule object
+    def visualize():
+        print()
+
 
 class ex_schedule:      # ex for exclusive, excluding
     def __init__(self, start, end, num_members):
@@ -73,40 +75,12 @@ class ex_schedule:      # ex for exclusive, excluding
         # sched_size = 4 * t_hr + num_q_hr
 
         # using t_hr and min, generate array size
-        self.sched = [[[True for z in range(num_members)] for x in range(sched_size)] for y in range(7)]
-
-def visualize_day(schedule, day):
-    st_t = schedule.start
-    e_t = schedule.end
-    arr2d = schedule.sched
-
-    # Prints an informative banner at the top of the visualization
-    print("######### VISUALIZING " + str(day) + " #########")       # todo: there's a strptime method that converts int to day of week
-    print(st_t, end=" - ")
-    print(e_t)
-    print("-")
-
-    diff_hr = e_t.hour - st_t.hour
-    diff_min = e_t.minute - st_t.minute
-    diff = diff_hr * 2 + int(diff_min/30)        # number of 1/2 hr slots
-
-    for i in range(diff): # convert to datetime.datetime object, add timedelta, convert back
-        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
-        diff_i = datetime.timedelta(minutes=30*i)
-        comb = dtdt + diff_i
-        comb = comb.time()
-        print(comb.strftime("%H:%M"), end="\t|")           # prints without seconds
-
-        if arr2d[day][i] is True:
-            print(" |")
-        else:
-        # if arr2d[day][i] is False:
-            print("x|")
+        self.array = [[[True for z in range(num_members)] for x in range(sched_size)] for y in range(7)]
 
 def visualize_week(schedule):
     st_t = schedule.start
     e_t = schedule.end
-    arr2d = schedule.sched
+    arr2d = schedule.array
 
     # Prints an informative banner at the top of the visualization
     print("\n######### VISUALIZING WEEK: " + schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
@@ -160,7 +134,7 @@ def visualize_week(schedule):
 def visualize_ex_week(ex_schedule, membs):
     st_t = ex_schedule.start
     e_t = ex_schedule.end
-    days = ex_schedule.sched
+    days = ex_schedule.array
 
     # Prints an informative banner at the top of the visualization
     print("\n######### VISUALIZING WEEK: " + ex_schedule.name + " #########")       # todo: there's a strptime method that converts int to day of week
@@ -228,13 +202,13 @@ def modify_schedule(m_sched, dt_se, i):
         dt_end = dt_range[1]
 
         if ((dt_start is True) and (dt_end is True)):           # Case 1: completely free this day (there should only be 1 dt_range in dt_se)
-            for s in range(len(m_sched_mod.sched[i])):          # Set all to True
-                m_sched_mod.sched[i][s] = True
+            for s in range(len(m_sched_mod.array[i])):          # Set all to True
+                m_sched_mod.array[i][s] = True
             return m_sched_mod
 
         if first_pass is True:                                  # Only do this the first time
-            for s in range(len(m_sched_mod.sched[i])):          # Otherwise will overwrite changes with every dt_range
-                m_sched_mod.sched[i][s] = False                 # Set all to False (init all false)
+            for s in range(len(m_sched_mod.array[i])):          # Otherwise will overwrite changes with every dt_range
+                m_sched_mod.array[i][s] = False                 # Set all to False (init all false)
                 first_pass = False
 
         if ((dt_start is False) and (dt_end is False)):         # Case 2: completely busy (there should only be 1 dt_range in dt_se)
@@ -254,14 +228,14 @@ def modify_schedule(m_sched, dt_se, i):
         num_slot_end = t_hr_end * 2 + num_halfhr_end
 
         for j in range(num_slot_end)[num_slot_start:]:
-            m_sched_mod.sched[i][j] = True
+            m_sched_mod.array[i][j] = True
 
     return m_sched_mod
 
 def member_schedule(master, avails, name, test):
-    m_sched = schedule(master.start, master.end, name)          # Set array/schedule size to same as master
+    m_sched = Schedule(master.start, master.end, name)          # Set array/schedule size to same as master
 
-    for i in range(len(m_sched.sched)):                         # Modify array with avails
+    for i in range(len(m_sched.array)):                         # Modify array with avails
         day_avail = avails[i]                                   # At this step, still strings (no dateetime conversion)
         # print("day avail: ", end="")
         # print(day_avail)
@@ -282,11 +256,11 @@ def compare_schedules(t, m):
     mod = copy.copy(t)
     mod.name = str(t.name) + " + " + str(m.name)
 
-    for d, day in enumerate(mod.sched):         # Ah yes enumerate is a thing
+    for d, day in enumerate(mod.array):         # Ah yes enumerate is a thing
         for i, timeslot in enumerate(day):
             # Check if both m and t free at this time (AND)
-            free = timeslot & m.sched[d][i]
-            mod.sched[d][i] = free
+            free = timeslot & m.array[d][i]
+            mod.array[d][i] = free
     return mod
 
 # def compare_schedules_2(t, m):
@@ -304,7 +278,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
     r_comb = []
     print("Weekly Schedule:")
 
-    for i, schedlist in enumerate(mod.sched):               # schedlist is list of True, False
+    for i, schedlist in enumerate(mod.array):               # schedlist is list of True, False
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
 
         true_range = []                                     # saves indices
@@ -375,7 +349,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
 
         if(): print()
         elif ex_pract is not False:
-            print("| missing: ", whos_missing(schedlist, ex_pract.sched[i], members))            # compare mod to ex_pract and see who's missing
+            print("| missing: ", whos_missing(schedlist, ex_pract.array[i], members))            # compare mod to ex_pract and see who's missing
         else: print()
 
     suggest_prac(n, r_comb)
@@ -431,12 +405,12 @@ def missing_memb_practices(ex_schedule, m, master):
     name = "Missing " + str(m) + " member(s)"
     mod_sched = member_schedule(master, ["free" for i in range(7)], name, False)
 
-    for d, day in enumerate(ex_schedule.sched):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
+    for d, day in enumerate(ex_schedule.array):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
         for i, timeslot in enumerate(day):
             if (np.sum(timeslot) >= (len(timeslot) - m)):                     # counts number of True
-                mod_sched.sched[d][i] = True
+                mod_sched.array[d][i] = True
             else:
-                mod_sched.sched[d][i] = False
+                mod_sched.array[d][i] = False
     return mod_sched
 
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
@@ -545,14 +519,14 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     #  WITH N MISSING MEMBERS #
     for i, m in enumerate(members_in):
         for d in range(7):                                  # d: days of the week (0-6)
-            for hr in range(len(practice.sched[0])):        # hr: hours in the day
-                practice.sched[d][hr][i] = m.sched[d][hr]
+            for hr in range(len(practice.array[0])):        # hr: hours in the day
+                practice.array[d][hr][i] = m.array[d][hr]
 
-        # print(practice.sched[0]) # monday
-        # print(practice.sched[0][0]) # monday at 9
-        # print(practice.sched[0][0][i]) # monday at 9 for first member
-        # print(m.sched[0]) # member monday
-        # print(m.sched[0][0]) # member monday at 9
+        # print(practice.array[0]) # monday
+        # print(practice.array[0][0]) # monday at 9
+        # print(practice.array[0][0][i]) # monday at 9 for first member
+        # print(m.array[0]) # member monday
+        # print(m.array[0][0]) # member monday at 9
 
     visualize_ex_week(practice, membs)
 
@@ -609,9 +583,14 @@ def create_members_from_excel(master, excel_path, test):
     return members_arr, others
 
 # master is global fuck this
-master = schedule('9:00', '22:00', "master")
+# master = Schedule('9:00', '22:00', "master")
 
 def main():
+
+    master = Schedule('9:00', '22:00', "master")
+    visualize_week(master)
+    # mid-REFACTOR
+    exit(1)
 
     try:
         path = sys.argv[1]
