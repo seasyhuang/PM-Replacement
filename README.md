@@ -19,11 +19,11 @@ answers to questions that i had:
 1. `Schedule class` renamed (capitalized)
 2. `schedule.sched` is now `Schedule.array`
 3. Defined new method for calculating `Schedule.array` - [Calling a class function inside of __init__](https://stackoverflow.com/questions/12646326/calling-a-class-function-inside-of-init)
-4. Question: should it be `def calculate_num_blocks(self, start, end):` or `def calculate_num_blocks(self)`?
+4. Question: should it be `def calculate_num_blocks(self, start, end):` or `def calculate_num_blocks(self)`? A: [it looks like](https://realpython.com/instance-class-and-static-methods-demystified/#class-methods) - is `calculate_num_blocks` a staticmethod? (ok watch [this](https://www.youtube.com/watch?v=rq8cL2XMM5M))
 
 CURRENT: in `def visualize(self):`, cleaning the dtdt shitshow
 
 
 
-[Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
-[PEP 8](https://www.python.org/dev/peps/pep-0008/)
+- [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+- [PEP 8](https://www.python.org/dev/peps/pep-0008/)

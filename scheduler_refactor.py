@@ -19,15 +19,15 @@ class Schedule:
         self.start = start                              # Schedule start time (ex. 9:00)
         self.end = end                                  # Schedule end time (ex. 22:00)
         self.name = name                                # Schedule name (ex. member name, final schedule, etc)
-        self.array = self.create_array(start, end)      # Schedule array (2D array of days of week (7) x half hour blocks)
+        self.array = self.create_array()                # Schedule array (2D array of days of week (7) x half hour blocks)
 
-    def create_array(self, start, end):
+    def create_array(self):
         # Converts start/end time to datettime if entered as string
-        if isinstance(start, str):
-            self.start = datetime.datetime.strptime(start, '%H:%M')
+        if isinstance(self.start, str):
+            self.start = datetime.datetime.strptime(self.start, '%H:%M')
             self.start = datetime.time(self.start.hour, self.start.minute)
-        if isinstance(end, str):
-            self.end = datetime.datetime.strptime(end, '%H:%M')
+        if isinstance(self.end, str):
+            self.end = datetime.datetime.strptime(self.end, '%H:%M')
             self.end = datetime.time(self.end.hour, self.end.minute)
 
         # Generate array from number of (30 minute) blocks
@@ -35,7 +35,10 @@ class Schedule:
 
         return [[True for x in range(num_blocks)] for y in range(7)]
 
-    def calculate_num_blocks(self, start, end):
+    # maybe
+    # watch this first https://www.youtube.com/watch?v=rq8cL2XMM5M
+    @staticmethod
+    def calculate_num_blocks(start, end):
         # Determining size of array: get difference
         total_hrs = end.hour - start.hour
         total_mins = end.minute - start.minute
@@ -48,15 +51,11 @@ class Schedule:
 
     # mid-REFACTOR: Instead of visualize schedule method, use method inside Schedule object
     def visualize(self):
-        start = self.start
-        end = self.end
-        array = self.array
-
         # Banner
         print("\n######### VISUALIZING WEEK: " + self.name + " #########")
-        print(start, "-", end, "\n")
+        print(self.start, "-", self.end, "\n")
 
-        num_blocks = self.calculate_num_blocks(start, end)
+        num_blocks = self.calculate_num_blocks(self.start, self.end)
 
         # Create toprint array that stores time (0) and schedules (1->7)
         # Not great because index is now off by 1  ¯\_(ツ)_/¯
@@ -69,9 +68,9 @@ class Schedule:
         # MID-REFACTOR - clean this up here
         # is there really no better way than to use a full datetime object?
         # https://stackoverflow.com/questions/100210/what-is-the-standard-way-to-add-n-seconds-to-datetime-time-in-python
-        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), start)
-        dtdt = start
-        print(start)
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), self.start)
+        dtdt = self.start
+        print(self.start)
         exit(1)
         for i in range(num_blocks):
             num_blocks_i = datetime.timedelta(minutes=30*i)
@@ -80,9 +79,9 @@ class Schedule:
             toprint[0].append(comb.strftime("%H:%M"))
 
         # Saving all the stuff in array into toprint (since we already have the information)
-        for day_i in range(len(array)):
+        for day_i in range(len(self.array)):
             # Ex: sunday in array is 0, save at 0+1 in toprint
-            toprint[day_i+1] = array[day_i]
+            toprint[day_i+1] = self.array[day_i]
 
         # Right column of times:
         toprint.append(toprint[0])
