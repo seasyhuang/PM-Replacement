@@ -21,7 +21,6 @@ class Schedule:
         self.name = name                                # Schedule name (ex. member name, final schedule, etc)
         self.array = self.create_array(start, end)      # Schedule array (2D array of days of week (7) x half hour blocks)
 
-    # mid-REFACTOR - fix comments
     def create_array(self, start, end):
         # Converts start/end time to datettime if entered as string
         if isinstance(start, str):
@@ -31,22 +30,77 @@ class Schedule:
             self.end = datetime.datetime.strptime(end, '%H:%M')
             self.end = datetime.time(self.end.hour, self.end.minute)
 
-        # get difference
-        t_hr = self.end.hour - self.start.hour
-        t_min = self.end.minute - self.start.minute
+        # Generate array from number of (30 minute) blocks
+        num_blocks = self.calculate_num_blocks(self.start, self.end)
 
-        # in 30 min blocks:
-        num_half_hr = int(t_min/30)
-        sched_size = 2 * t_hr + num_half_hr
-        # # in 15 min blocks:
-        # num_q_hr = int(t_min/15)
-        # sched_size = 4 * t_hr + num_q_hr
+        return [[True for x in range(num_blocks)] for y in range(7)]
 
-        # using t_hr and min, generate array size
-        return [[True for x in range(sched_size)] for y in range(7)]
+    def calculate_num_blocks(self, start, end):
+        # Determining size of array: get difference
+        total_hrs = end.hour - start.hour
+        total_mins = end.minute - start.minute
 
-    # Instead of visualize schedule method, use method inside Schedule object
-    def visualize():
+        # Determining size of array: in 30 min blocks (rounded)
+        num_half_hr = int(total_mins/30)
+        num_blocks = 2 * total_hrs + num_half_hr
+
+        return num_blocks
+
+    # mid-REFACTOR: Instead of visualize schedule method, use method inside Schedule object
+    def visualize(self):
+        start = self.start
+        end = self.end
+        array = self.array
+
+        # Banner
+        print("\n######### VISUALIZING WEEK: " + self.name + " #########")
+        print(start, "-", end, "\n")
+
+        num_blocks = self.calculate_num_blocks(start, end)
+
+        # Create toprint array that stores time (0) and schedules (1->7)
+        # Not great because index is now off by 1  ¯\_(ツ)_/¯
+        toprint = [ [],
+                    [], [], [], [], [], [], [] ]
+        toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
+
+        # Setting up the time on the very left as toprint[0]
+        # Convert to datetime.datetime object, add timedelta, convert back
+        # MID-REFACTOR - clean this up here
+        # is there really no better way than to use a full datetime object?
+        # https://stackoverflow.com/questions/100210/what-is-the-standard-way-to-add-n-seconds-to-datetime-time-in-python
+        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), start)
+        dtdt = start
+        print(start)
+        exit(1)
+        for i in range(num_blocks):
+            num_blocks_i = datetime.timedelta(minutes=30*i)
+            comb = dtdt + num_blocks_i
+            comb = comb.time()
+            toprint[0].append(comb.strftime("%H:%M"))
+
+        # Saving all the stuff in array into toprint (since we already have the information)
+        for day_i in range(len(array)):
+            # Ex: sunday in array is 0, save at 0+1 in toprint
+            toprint[day_i+1] = array[day_i]
+
+        # Right column of times:
+        toprint.append(toprint[0])
+
+        # The actual printing part of this method
+        # HEADER:
+        print("#####", end=" ")
+        for d in toprintdays: print("(" + d + ") ", end="")
+        print("#####")
+        # SCHEDULE:
+        for i in range(len(toprint[0])):
+            for j in range(len(toprint)):
+                temp = toprint[j][i]
+                if temp is True: temp = "   "
+                elif temp is False: temp = " x "
+                else: temp = str(toprint[j][i]) #   + "\t"
+                print(temp, end=" ")
+            print("")
         print()
 
 
@@ -587,9 +641,10 @@ def create_members_from_excel(master, excel_path, test):
 
 def main():
 
-    master = Schedule('9:00', '22:00', "master")
+    master = Schedule('9:00', '22:30', "Master")
     visualize_week(master)
     # mid-REFACTOR
+    master.visualize()
     exit(1)
 
     try:
