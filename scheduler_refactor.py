@@ -35,7 +35,6 @@ class Schedule:
 
         return [[True for x in range(num_blocks)] for y in range(7)]
 
-    # maybe
     # watch this first https://www.youtube.com/watch?v=rq8cL2XMM5M
     @staticmethod
     def calculate_num_blocks(start, end):
@@ -57,49 +56,31 @@ class Schedule:
 
         num_blocks = self.calculate_num_blocks(self.start, self.end)
 
-        # Create toprint array that stores time (0) and schedules (1->7)
-        # Not great because index is now off by 1  ¯\_(ツ)_/¯
-        toprint = [ [],
-                    [], [], [], [], [], [], [] ]
-        toprintdays = ["S", "M", "T", "W", "R", "F", "S" ]
+        days = ["S", "M", "T", "W", "R", "F", "S" ]
+        times = []
 
-        # Setting up the time on the very left as toprint[0]
-        # Convert to datetime.datetime object, add timedelta, convert back
-        # MID-REFACTOR - clean this up here
-        # is there really no better way than to use a full datetime object?
-        # https://stackoverflow.com/questions/100210/what-is-the-standard-way-to-add-n-seconds-to-datetime-time-in-python
+        # Fill times column (from datetime obj)
+        # Convert to datetime.datetime object, add timedelta, convert back - arbitrary datetime.date(1, 1, 1)
         dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), self.start)
-        dtdt = self.start
-        print(self.start)
-        exit(1)
         for i in range(num_blocks):
             num_blocks_i = datetime.timedelta(minutes=30*i)
-            comb = dtdt + num_blocks_i
-            comb = comb.time()
-            toprint[0].append(comb.strftime("%H:%M"))
+            combined = (dtdt + num_blocks_i).time()
+            times.append(combined.strftime("%H:%M"))
 
-        # Saving all the stuff in array into toprint (since we already have the information)
-        for day_i in range(len(self.array)):
-            # Ex: sunday in array is 0, save at 0+1 in toprint
-            toprint[day_i+1] = self.array[day_i]
-
-        # Right column of times:
-        toprint.append(toprint[0])
-
-        # The actual printing part of this method
+        # Printing visualization of schedule
         # HEADER:
         print("#####", end=" ")
-        for d in toprintdays: print("(" + d + ") ", end="")
+        for d in days: print("(" + d + ") ", end="")
         print("#####")
         # SCHEDULE:
-        for i in range(len(toprint[0])):
-            for j in range(len(toprint)):
-                temp = toprint[j][i]
-                if temp is True: temp = "   "
-                elif temp is False: temp = " x "
-                else: temp = str(toprint[j][i]) #   + "\t"
-                print(temp, end=" ")
-            print("")
+        for t in range(len(times)):
+            print(times[t], end="")
+            for d in range(7):
+                slot = self.array[d][t]
+                if slot is True: slot = "   "
+                elif slot is False: slot = " x "
+                print(slot, end=" ")
+            print(times[t])
         print()
 
 
@@ -517,6 +498,7 @@ def generate_practice_times(n, master, members_in):
     if text is "y":
         for m in members_in:
             visualize_week(m)
+            m.visualize()
 
     #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(master.start) + " - " + str(master.end))
@@ -534,13 +516,16 @@ def generate_practice_times(n, master, members_in):
             mod = compare_schedules(members_in[0], members_in[1])
             if view_comp_sched:
                 visualize_week(mod)
+                mod.visualize()
         else:
             try:
                 mod = compare_schedules(mod, members_in[i+1])
                 if view_comp_sched:
                     visualize_week(mod)
+                    mod.visualize()
             except: pass
     visualize_week(mod)                                                # visualizing modified week outside of the method
+    mod.visualize()
 
     get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
     return mod
@@ -567,6 +552,7 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     if text is "y":
         for m in members_in:
             visualize_week(m)
+            m.visualize()
 
     #### IMPLEMENTATION 2: ####
     #  WITH N MISSING MEMBERS #
@@ -585,6 +571,8 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
     visualize_week(mod_practice)
+    mod_practice.visualize()
+
     get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
     # next todo: get_practice_range printing who's missing
 
@@ -630,7 +618,9 @@ def create_members_from_excel(master, excel_path, test):
         if test: print(name)
         member = member_schedule(master, week, name, test)
 
-        if test: visualize_week(member)
+        if test:
+            visualize_week(member)
+            member.visualize()
         members_arr.append(member)
 
     return members_arr, others
@@ -639,12 +629,8 @@ def create_members_from_excel(master, excel_path, test):
 # master = Schedule('9:00', '22:00', "master")
 
 def main():
-
     master = Schedule('9:00', '22:30', "Master")
-    visualize_week(master)
-    # mid-REFACTOR
     master.visualize()
-    exit(1)
 
     try:
         path = sys.argv[1]
