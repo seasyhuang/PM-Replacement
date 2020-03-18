@@ -218,9 +218,7 @@ def member_schedule(master, avails, name, other):
 
     for i in range(len(m_sched.array)):                         # Modify array with avails
         day_avail = avails[i]                                   # At this step, still strings (no dateetime conversion)
-
         dt_se = dtconvert.convert_to_datetime(day_avail, master, False)    # UPDATE: dt_se is the 2D list ("ranges")
-
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
     # NEXT TODO: Modify to add exceptions - right now exceptions are still None
@@ -254,7 +252,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
 
     skip = False
     r_comb = []
-    print("Weekly Schedule:")
+    print("######### Weekly Schedule: #########")
 
     for i, schedlist in enumerate(mod.array):               # schedlist is list of True, False
         print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
@@ -395,7 +393,7 @@ def missing_memb_practices(ex_schedule, m, master):
 def suggest_prac(n, r_comb):
 
     print()
-    print("Suggested dates:")                   # 0 = sun
+    print("######### Suggested dates: #########")                   # 0 = sun
     weekday = datetime.date.today()
     idx = (weekday.weekday() + 1) % 7           # need weekdays shifted by 1 (wait can we do this with iso or whatever it's called?)
     i = 1
@@ -411,7 +409,7 @@ def suggest_prac(n, r_comb):
         # STORE practice dates + PRINT
         if r_comb[j] is not None:
             if n == 1:
-                print("\nFILMING: ", end="")
+                print("\n######### FILMING: #########")
 
             print((weekday + datetime.timedelta(days=i-1)).strftime("%A, %B %d %Y"), end=": ")
             for dt in r_comb[j]:
@@ -426,6 +424,14 @@ def suggest_prac(n, r_comb):
         # print(idx)
     # for now: suggestions are just the range (make mod for earlier? or nah too complicated?)
     return weekday
+
+# Helper for printing "other"
+def printOthers(members_arr):
+    print("######### EXCEPTIONS #########")
+    for m in members_arr:
+        print(m.name + "\t ", m.other.replace("\n", "; "))
+    print()
+    return
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
@@ -466,11 +472,18 @@ def generate_practice_times(n, master, members_in):
                     mod.visualize()
             except: pass
     mod.visualize()
+    printOthers(members_in)
 
     get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
+
     return mod
 
 # IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
+    '''
+    method for when it's okay to miss m number of members
+    new variable - max number of members missing
+
+    '''
 def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     mn = max_num_memb_missing
     print("Generating best practice times (missing max", mn, "member(s))...")
@@ -510,17 +523,11 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
     mod_practice.visualize()
+    printOthers(members_in)
 
     get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
-    # next todo: get_practice_range printing who's missing
 
-    '''
-    method for when it's okay to miss m number of members
-    new variable - max number of members missing
-
-    '''
-
-# Returns list of member_schedule objects and list of others
+# Returns members_arr, a list of member_schedule objects
 def create_members_from_excel(master, excel_path, test):
     members_arr = []
 
@@ -528,32 +535,38 @@ def create_members_from_excel(master, excel_path, test):
     xsheet = pd.read_excel(excel_path, header=1)
     if test:    print(xsheet.head, xsheet.columns)
 
+    # For every member in the sheet, get avails and assign to Schedule object
     for i, row in xsheet.iterrows():
         week = []
-        name = xsheet['NAME'].iloc[i]                # same as xsheet.columns[0]. TODO: maybe put a check on this?
-        # from 1 to 7 ()
+
+        # Check if sheet is set up properly: name must be at A2
+        try:    name = xsheet['NAME']
+        except:
+            print("Name is not properly formatted.")
+            exit(1)
+
+        # Getting avails from SUN - SAT (1 to 7)
         for d in range(7):
-            day_header = xsheet.columns[d+1]         # SUN, MON, ...
-            if test:    print(day_header, end=": ")
-            day_avail = xsheet[day_header].iloc[i]
-            if test:    print(day_avail)
-            week.append(day_avail)
+            weekday = xsheet.columns[d+1]         # SUN, MON, ...
+            if test:    print(weekday, end=": ")
+            avail = xsheet[weekday].iloc[i]
+            if test:    print(avail)
+            week.append(avail)
 
-        # mid refactor: add "other" to Schedule object
+        name = row[0]
+        other = xsheet[xsheet.columns[7+1]].iloc[i]
 
-        # TODO: set for d in range(7): ---> for d in range(8): once exceptions (other) can be handled
-        # for now: i = 8
-        day_header = xsheet.columns[7+1]
-        other = xsheet[day_header].iloc[i]
+        # If other was left blank
         try:
             if math.isnan(other):   other = '-'
         except: pass
-        # others.append([name.upper() + ":\t", other])
 
-        if test:    print(name)
         member = member_schedule(master, week, name, other)
 
-        if test:    member.visualize()
+        if test:
+            print(name, member.name)
+            member.visualize()
+
         members_arr.append(member)
 
     return members_arr
@@ -580,27 +593,25 @@ def main():
     master = Schedule('9:00', '22:30', "Master", None)
 
     try:
-        members_arr = create_members_from_excel(master, path, False)         # 3rd var for testing: if test=True, will print everything
+        # arg 3 is for testing: if test=True, will print testing info
+        members_arr = create_members_from_excel(master, path, False)
     except:
         print("Error reading excel file.")
         exit(1)
 
     # Checks if there is argument 3, 4 - request for optimal schedule (-o) will be ignored without specifying number of missing members (-m)
+    # mid-refactor - here
     try:
         fullhouse = sys.argv[3]
         max_num_memb_missing = sys.argv[4]
     except:
         generate_practice_times(n, master, members_arr)
-        # for o in others: print(o[0], o[1].replace("\n", "; "))
-        # refactor: do others
         exit(1)
 
     if fullhouse == "o":        # this if/else format may need to be changed in the future if there are other options
         try:
             max_num_memb_missing = int(max_num_memb_missing)
             generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
-            # for o in others: print(o[0], o[1].replace("\n", "; "))
-            # refactor: do others
 
             # note to self: exit() out of method for testing will still print the exception text
         except Exception as e:

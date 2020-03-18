@@ -30,5 +30,4 @@ answers to questions that i had:
 - [PEP 8](https://www.python.org/dev/peps/pep-0008/)
 
 
-# mid refactor: add "other" to Schedule object
-create_members_from_excel
+# mid refactor: finished adding other to Schedule obj
