@@ -22,8 +22,13 @@ answers to questions that i had:
 4. Question: should it be `def calculate_num_blocks(self, start, end):` or `def calculate_num_blocks(self)`? A: [it looks like](https://realpython.com/instance-class-and-static-methods-demystified/#class-methods) - is `calculate_num_blocks` a staticmethod? (ok watch [this](https://www.youtube.com/watch?v=rq8cL2XMM5M))
 5. Created `visualize(self):` class method to replace `visualize_week`
 ⋅⋅* `toprint` --> `vis_array` --> `self.array`, `toprintdays` --> `days`
-⋅⋅* CURRENT: in `def visualize(self):`, cleaning the dtdt shitshow
+6. Refactored `create_members_from_excel` method
+⋅⋅* Moved `other` into Schedule object
 
 
 - [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 - [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+
+
+# mid refactor: add "other" to Schedule object
+create_members_from_excel
