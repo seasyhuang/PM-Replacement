@@ -1,13 +1,12 @@
 # pm-replacement
 auto practice scheduler
 
-> python scheduler_new.py [name of excel] [number of practices] [o] [maximum number of members missing]
+Sample usage: `python scheduler_new.py [name of excel] [number of practices] [maximum number of members missing]`
 
 arguments:
 1) path to excel file (see example for format) - ex. test_twice.xlsx
 2) number of desired practices. code will provide +1 date for filming - ex. 4
-3) (optional) include "o" as an argument to generate non-full house practice schedule. otherwise, will provide full house only practices. if no argument for 4 provided, assumes maximum missing 1 member
-4) (optional) specify maximum number of members that can be missing
+3) (optional) optional argument to generate non-full house practice schedule. denotes maximum number of members that can be missing - ex. 2
 
 answers to questions that i had:
 - main: https://stackoverflow.com/questions/419163/what-does-if-name-main-do#419185
@@ -30,4 +29,4 @@ answers to questions that i had:
 - [PEP 8](https://www.python.org/dev/peps/pep-0008/)
 
 
-# mid refactor: finished adding other to Schedule obj
+Refactor: make generate_practice_times_2() dry

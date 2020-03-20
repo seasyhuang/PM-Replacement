@@ -49,7 +49,6 @@ class Schedule:
 
         return num_blocks
 
-    # mid-REFACTOR: Instead of visualize schedule method, use method inside Schedule object
     def visualize(self):
         # Banner
         print("\n######### VISUALIZING WEEK: " + self.name + " #########")
@@ -110,6 +109,9 @@ class ex_schedule:      # ex for exclusive, excluding
 
         # using t_hr and min, generate array size
         self.array = [[[True for z in range(num_members)] for x in range(sched_size)] for y in range(7)]
+
+# Create grid/master schedule
+MASTER = Schedule('9:00', '22:30', "Master", None)
 
 # prints the 3D part of ex_schedule a little nicer
 def visualize_ex_week(ex_schedule, membs):
@@ -196,7 +198,7 @@ def modify_schedule(m_sched, dt_se, i):
             return m_sched_mod
 
         # Case 3: modifications to m_sched_mod happen here
-        # Get difference between start of master schedule and start of member avail (on day i)
+        # Get difference between start of MASTER schedule and start of member avail (on day i)
         t_hr_start = dt_start.hour - m_sched_mod.start.hour
         t_min_start = dt_start.minute - m_sched_mod.start.minute
         num_halfhr_start = int(t_min_start/30)
@@ -213,12 +215,12 @@ def modify_schedule(m_sched, dt_se, i):
 
     return m_sched_mod
 
-def member_schedule(master, avails, name, other):
-    m_sched = Schedule(master.start, master.end, name, other)   # Set array/schedule size to same as master
+def member_schedule(MASTER, avails, name, other):
+    m_sched = Schedule(MASTER.start, MASTER.end, name, other)   # Set array/schedule size to same as MASTER
 
     for i in range(len(m_sched.array)):                         # Modify array with avails
         day_avail = avails[i]                                   # At this step, still strings (no dateetime conversion)
-        dt_se = dtconvert.convert_to_datetime(day_avail, master, False)    # UPDATE: dt_se is the 2D list ("ranges")
+        dt_se = dtconvert.convert_to_datetime(day_avail, MASTER, False)    # UPDATE: dt_se is the 2D list ("ranges")
         m_sched = modify_schedule(m_sched, dt_se, i)            # new version
 
     # NEXT TODO: Modify to add exceptions - right now exceptions are still None
@@ -226,7 +228,7 @@ def member_schedule(master, avails, name, other):
 
 # HELPER for generate_practice_times()
 # Both t and m are schedule objects (start, end, sched)
-### t - temp, could be master, could be ouput of previous iteration of this function (mod)
+### t - temp, could be MASTER, could be ouput of previous iteration of this function (mod)
 ### m - member to compare
 def compare_schedules(t, m):
     mod = copy.copy(t)
@@ -238,8 +240,6 @@ def compare_schedules(t, m):
             free = timeslot & m.array[d][i]
             mod.array[d][i] = free
     return mod
-
-# def compare_schedules_2(t, m):
 
 # HELPER for generate_practice_times()
 # returns all potential practice times in a range (per day)
@@ -277,7 +277,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
         # true_range stores the indices: use them to find associated datetime objects
         st_t = mod.start
         e_t = mod.end
-        dtdt = datetime.datetime.combine(datetime.date(1,1,1), st_t)      # TODO: arbitrary dtdt (1,1,1)
+        dtdt = datetime.datetime.combine(datetime.date(1,1,1), st_t)
 
         for ind in true_range:
             diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
@@ -328,6 +328,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
             print("| missing: ", whos_missing(schedlist, ex_pract.array[i], members))            # compare mod to ex_pract and see who's missing
         else: print()
 
+
     suggest_prac(n, r_comb)
 
     return r_comb
@@ -363,13 +364,13 @@ def whos_missing(mods, day, members):
     if clean:
         s = ""
         for m in clean:
-            s += m[0] + " (" + gimme_time(master.start, m[1]) + "-" + gimme_time(master.start, m[-1]+1) + "), "
+            s += m[0] + " (" + get_time(MASTER.start, m[1]) + "-" + get_time(MASTER.start, m[-1]+1) + "), "
         return s[:-2]
     else:
         return
 
-
-def gimme_time(st_t, i):
+# mid-refactor: this is definitely not dry
+def get_time(st_t, i):
     dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
     diff_i = datetime.timedelta(minutes=30*i)
     comb = dtdt + diff_i
@@ -377,9 +378,9 @@ def gimme_time(st_t, i):
     return comb.strftime("%H:%M")          # appends without seconds
 
 
-def missing_memb_practices(ex_schedule, m, master):
+def missing_memb_practices(ex_schedule, m, MASTER):
     name = "Missing " + str(m) + " member(s)"
-    mod_sched = member_schedule(master, ["free" for i in range(7)], name, False)
+    mod_sched = member_schedule(MASTER, ["free" for i in range(7)], name, False)
 
     for d, day in enumerate(ex_schedule.array):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
         for i, timeslot in enumerate(day):
@@ -426,7 +427,7 @@ def suggest_prac(n, r_comb):
     return weekday
 
 # Helper for printing "other"
-def printOthers(members_arr):
+def print_others(members_arr):
     print("######### EXCEPTIONS #########")
     for m in members_arr:
         print(m.name + "\t ", m.other.replace("\n", "; "))
@@ -435,7 +436,7 @@ def printOthers(members_arr):
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-def generate_practice_times(n, master, members_in):
+def generate_practice_times(n, MASTER, members_in):
     print("Generating full house practice times...")
     membs = ""
     for memb in members_in:
@@ -445,16 +446,16 @@ def generate_practice_times(n, master, members_in):
     text = input("View member schedules? [y/n, default is no] ")
 
     # See the schedules
-    if text is "y":
+    if text.lower() == "y":
         for m in members_in:
             m.visualize()
 
     #  members - list of all members (as member_schedule objects)
-    print("Schedule set from: " + str(master.start) + " - " + str(master.end))
+    print("Schedule set from: " + str(MASTER.start) + " - " + str(MASTER.end))
 
     text = input("Visualize comparison? [y/n] ")
-    if text is "y": view_comp_sched = True
-    else: view_comp_sched = False
+    if text.lower() == "y":     view_comp_sched = True
+    else:                       view_comp_sched = False
 
     ### IMPLEMENTATION 1: ###
     ###  FULL HOUSE ONLY  ###
@@ -472,7 +473,7 @@ def generate_practice_times(n, master, members_in):
                     mod.visualize()
             except: pass
     mod.visualize()
-    printOthers(members_in)
+    print_others(members_in)
 
     get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
 
@@ -484,11 +485,11 @@ def generate_practice_times(n, master, members_in):
     new variable - max number of members missing
 
     '''
-def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
-    mn = max_num_memb_missing
+def generate_practice_times_2(n, MASTER, members_in, mn):
     print("Generating best practice times (missing max", mn, "member(s))...")
 
-    practice = ex_schedule('9:00', '22:00', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
+    practice = ex_schedule('9:00', '22:30', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
+    # mid-refactor - fix this
 
     membs = ""
     for memb in members_in:
@@ -496,13 +497,13 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
     print("Members: "+ membs[:-2])
 
     #  members - list of all members (as member_schedule objects)
-    print("Schedule set from: " + str(master.start) + " - " + str(master.end))
+    print("Schedule set from: " + str(MASTER.start) + " - " + str(MASTER.end))
 
     print("Generating full house practice times...")
     text = input("View member schedules? [y/n, default is no] ")
 
     # See the schedules
-    if text is "y":
+    if text.lower() == "y":
         for m in members_in:
             m.visualize()
 
@@ -521,14 +522,14 @@ def generate_practice_times_2(n, master, members_in, max_num_memb_missing):
 
     visualize_ex_week(practice, membs)
 
-    mod_practice = missing_memb_practices(practice, mn, master)                  # converts ex_schedule to schedule with max_num_memb_missing in consideration
+    mod_practice = missing_memb_practices(practice, mn, MASTER)                  # converts ex_schedule to schedule with max_missing in consideration
     mod_practice.visualize()
-    printOthers(members_in)
+    print_others(members_in)
 
     get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
 
 # Returns members_arr, a list of member_schedule objects
-def create_members_from_excel(master, excel_path, test):
+def create_members_from_excel(MASTER, excel_path, test):
     members_arr = []
 
     # Read_excel: setting header=1 removes the title
@@ -561,7 +562,7 @@ def create_members_from_excel(master, excel_path, test):
             if math.isnan(other):   other = '-'
         except: pass
 
-        member = member_schedule(master, week, name, other)
+        member = member_schedule(MASTER, week, name, other)
 
         if test:
             print(name, member.name)
@@ -589,37 +590,23 @@ def main():
         print("Please specify number of desired practices in second argument.")
         exit(1)
 
-    # Create grid/master schedule
-    master = Schedule('9:00', '22:30', "Master", None)
-
     try:
         # arg 3 is for testing: if test=True, will print testing info
-        members_arr = create_members_from_excel(master, path, False)
+        members_arr = create_members_from_excel(MASTER, path, False)
     except:
         print("Error reading excel file.")
         exit(1)
 
-    # Checks if there is argument 3, 4 - request for optimal schedule (-o) will be ignored without specifying number of missing members (-m)
+    # Checks if argument 3 exists and is an int
     # mid-refactor - here
     try:
-        fullhouse = sys.argv[3]
-        max_num_memb_missing = sys.argv[4]
+        max_missing = int(sys.argv[3])
+        generate_practice_times_2(n, MASTER, members_arr, max_missing)
     except:
-        generate_practice_times(n, master, members_arr)
-        exit(1)
-
-    if fullhouse == "o":        # this if/else format may need to be changed in the future if there are other options
-        try:
-            max_num_memb_missing = int(max_num_memb_missing)
-            generate_practice_times_2(n, master, members_arr, max_num_memb_missing)
-
-            # note to self: exit() out of method for testing will still print the exception text
-        except Exception as e:
-            print("Maximum number of members missing (arg 4) must be an integer.")
-            return e
-
-    else:
-        print("Invalid: 3rd argument is not 'o'")
+        print("\nInvalid arg 3: number of members missing (arg 3) must be an integer.")
+        text = input("Default to 0 members missing? [y/n] ")
+        if text.lower() == "y": generate_practice_times(n, MASTER, members_arr)
+        else:                   exit(1)
 
     pass
 
