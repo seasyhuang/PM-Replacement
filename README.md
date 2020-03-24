@@ -29,4 +29,4 @@ answers to questions that i had:
 - [PEP 8](https://www.python.org/dev/peps/pep-0008/)
 
 
-Refactor: make generate_practice_times_2() dry
+Refactor: make generate_practice_times_2() dry: [here](https://www.codementor.io/blog/pythonic-code-6yxqdoktzt) and [here](https://pythontips.com/2013/08/04/args-and-kwargs-in-python-explained/)

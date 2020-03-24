@@ -3,7 +3,7 @@ import datetime
 # HELPER for extracting avails --> datetime time objects
 def convert_to_datetime(str, master, test):
     if (str is None) or (isinstance(str, float)):
-        print("ASSUMING NO INPUT is FREE ", end="")
+        print("ASSUMING NO INPUT IS FREE ")
         str = "free"
     ranges = []
     split_string = [st_end.strip().lower() for st_end in str.split(' ')]

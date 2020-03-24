@@ -226,7 +226,7 @@ def member_schedule(MASTER, avails, name, other):
     # NEXT TODO: Modify to add exceptions - right now exceptions are still None
     return m_sched
 
-# HELPER for generate_practice_times()
+# HELPER for gen_pract_times()
 # Both t and m are schedule objects (start, end, sched)
 ### t - temp, could be MASTER, could be ouput of previous iteration of this function (mod)
 ### m - member to compare
@@ -241,7 +241,7 @@ def compare_schedules(t, m):
             mod.array[d][i] = free
     return mod
 
-# HELPER for generate_practice_times()
+# HELPER for gen_pract_times()
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
 def get_practice_range(n, mod, ex_pract, members_in):
@@ -327,7 +327,6 @@ def get_practice_range(n, mod, ex_pract, members_in):
         elif ex_pract is not False:
             print("| missing: ", whos_missing(schedlist, ex_pract.array[i], members))            # compare mod to ex_pract and see who's missing
         else: print()
-
 
     suggest_prac(n, r_comb)
 
@@ -422,8 +421,6 @@ def suggest_prac(n, r_comb):
 
         i += 1
 
-        # print(idx)
-    # for now: suggestions are just the range (make mod for earlier? or nah too complicated?)
     return weekday
 
 # Helper for printing "other"
@@ -436,7 +433,7 @@ def print_others(members_arr):
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-def generate_practice_times(n, MASTER, members_in):
+def gen_pract_times(n, MASTER, members_in):
     print("Generating full house practice times...")
     membs = ""
     for memb in members_in:
@@ -485,7 +482,7 @@ def generate_practice_times(n, MASTER, members_in):
     new variable - max number of members missing
 
     '''
-def generate_practice_times_2(n, MASTER, members_in, mn):
+def gen_pract_times_miss(n, MASTER, members_in, mn):
     print("Generating best practice times (missing max", mn, "member(s))...")
 
     practice = ex_schedule('9:00', '22:30', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
@@ -591,23 +588,21 @@ def main():
         exit(1)
 
     try:
-        # arg 3 is for testing: if test=True, will print testing info
+        # Arg 3 is for testing, will print testing info
         members_arr = create_members_from_excel(MASTER, path, False)
+        print("Finished reading member schedules from excel file.")
     except:
         print("Error reading excel file.")
         exit(1)
 
-    # Checks if argument 3 exists and is an int
-    # mid-refactor - here
+    # Check: num missing members specified?
     try:
         max_missing = int(sys.argv[3])
-        generate_practice_times_2(n, MASTER, members_arr, max_missing)
+        gen_pract_times_miss(n, MASTER, members_arr, max_missing)
     except:
-        print("\nInvalid arg 3: number of members missing (arg 3) must be an integer.")
+        print("\nInvalid or misisng arg 3: number of members missing (arg 3) must be an integer.")
         text = input("Default to 0 members missing? [y/n] ")
-        if text.lower() == "y": generate_practice_times(n, MASTER, members_arr)
-        else:                   exit(1)
-
+        gen_pract_times(n, MASTER, members_arr) if text.lower() == "y" else exit(1)
     pass
 
 if __name__ == '__main__':
