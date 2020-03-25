@@ -5,83 +5,15 @@
 
 import sys
 from sys import argv
-import dtconvert
 import datetime
 import pprint
 import copy
-import math
 import calendar
-import pandas as pd
 import numpy as np
 
-class Schedule:
-    def __init__(self, start, end, name, other):        # Constructor
-        self.start = start                              # Schedule start time (ex. 9:00)
-        self.end = end                                  # Schedule end time (ex. 22:00)
-        self.name = name                                # Schedule name (ex. member name, final schedule, etc)
-        self.other = other                              # Schedule exceptions/"other"
-        self.array = self.create_array()                # Schedule array (2D array of days of week (7) x half hour blocks)
-
-    def create_array(self):
-        # Converts start/end time to datettime if entered as string
-        if isinstance(self.start, str):
-            self.start = datetime.datetime.strptime(self.start, '%H:%M')
-            self.start = datetime.time(self.start.hour, self.start.minute)
-        if isinstance(self.end, str):
-            self.end = datetime.datetime.strptime(self.end, '%H:%M')
-            self.end = datetime.time(self.end.hour, self.end.minute)
-
-        # Generate array from number of (30 minute) blocks
-        num_blocks = self.calculate_num_blocks(self.start, self.end)
-
-        return [[True for x in range(num_blocks)] for y in range(7)]
-
-    # watch this first https://www.youtube.com/watch?v=rq8cL2XMM5M
-    @staticmethod
-    def calculate_num_blocks(start, end):
-        # Determining size of array: get difference
-        total_hrs = end.hour - start.hour
-        total_mins = end.minute - start.minute
-
-        # Determining size of array: in 30 min blocks (rounded)
-        num_half_hr = int(total_mins/30)
-        num_blocks = 2 * total_hrs + num_half_hr
-
-        return num_blocks
-
-    def visualize(self):
-        # Banner
-        print("\n######### VISUALIZING WEEK: " + self.name + " #########")
-        print(self.start, "-", self.end, "\n")
-
-        num_blocks = self.calculate_num_blocks(self.start, self.end)
-
-        days = ["S", "M", "T", "W", "R", "F", "S" ]
-        times = []
-
-        # Fill times column (from datetime obj)
-        # Convert to datetime.datetime object, add timedelta, convert back - arbitrary datetime.date(1, 1, 1)
-        dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), self.start)
-        for i in range(num_blocks):
-            num_blocks_i = datetime.timedelta(minutes=30*i)
-            combined = (dtdt + num_blocks_i).time()
-            times.append(combined.strftime("%H:%M"))
-
-        # Printing visualization of schedule
-        # HEADER:
-        print("#####", end=" ")
-        for d in days: print("(" + d + ") ", end="")
-        print("#####")
-        # SCHEDULE:
-        for t in range(len(times)):
-            print(times[t], end="")
-            for d in range(7):
-                slot = self.array[d][t]
-                if slot is True: slot = "   "
-                elif slot is False: slot = " x "
-                print(slot, end=" ")
-            print(times[t])
-        print()
+import dtconvert
+import membexcel
+from Schedule import Schedule
 
 class ex_schedule:      # ex for exclusive, excluding
     def __init__(self, start, end, num_members):
@@ -163,7 +95,6 @@ def visualize_ex_week(ex_schedule, membs):
         print(times[i], end=" ")
         for d in range(len(days)):          # d: 0-6 (sun)
             array = days[d][i]
-            # import pdb; pdb.set_trace()
             print("[", end="")
             for am in array:
                 if am is True:  print("-", end="")
@@ -174,57 +105,6 @@ def visualize_ex_week(ex_schedule, membs):
             print("]", end="")
         print(" ", end=times[i])
         print()
-
-# HELPER for changing member schedule
-def modify_schedule(m_sched, dt_se, i):
-    m_sched_mod = m_sched
-    first_pass = True                                            # Lazy switch for init all false
-
-    for dt_range in dt_se:
-        dt_start = dt_range[0]
-        dt_end = dt_range[1]
-
-        if ((dt_start is True) and (dt_end is True)):           # Case 1: completely free this day (there should only be 1 dt_range in dt_se)
-            for s in range(len(m_sched_mod.array[i])):          # Set all to True
-                m_sched_mod.array[i][s] = True
-            return m_sched_mod
-
-        if first_pass is True:                                  # Only do this the first time
-            for s in range(len(m_sched_mod.array[i])):          # Otherwise will overwrite changes with every dt_range
-                m_sched_mod.array[i][s] = False                 # Set all to False (init all false)
-                first_pass = False
-
-        if ((dt_start is False) and (dt_end is False)):         # Case 2: completely busy (there should only be 1 dt_range in dt_se)
-            return m_sched_mod
-
-        # Case 3: modifications to m_sched_mod happen here
-        # Get difference between start of MASTER schedule and start of member avail (on day i)
-        t_hr_start = dt_start.hour - m_sched_mod.start.hour
-        t_min_start = dt_start.minute - m_sched_mod.start.minute
-        num_halfhr_start = int(t_min_start/30)
-        t_hr_end = dt_end.hour - m_sched_mod.start.hour
-        t_min_end = dt_end.minute - m_sched_mod.start.minute
-        num_halfhr_end = int(t_min_end/30)
-
-        # Turn the difference into num "slots" (to be used in the schedule list)
-        num_slot_start = t_hr_start * 2 + num_halfhr_start
-        num_slot_end = t_hr_end * 2 + num_halfhr_end
-
-        for j in range(num_slot_end)[num_slot_start:]:
-            m_sched_mod.array[i][j] = True
-
-    return m_sched_mod
-
-def member_schedule(MASTER, avails, name, other):
-    m_sched = Schedule(MASTER.start, MASTER.end, name, other)   # Set array/schedule size to same as MASTER
-
-    for i in range(len(m_sched.array)):                         # Modify array with avails
-        day_avail = avails[i]                                   # At this step, still strings (no dateetime conversion)
-        dt_se = dtconvert.convert_to_datetime(day_avail, MASTER, False)    # UPDATE: dt_se is the 2D list ("ranges")
-        m_sched = modify_schedule(m_sched, dt_se, i)            # new version
-
-    # NEXT TODO: Modify to add exceptions - right now exceptions are still None
-    return m_sched
 
 # HELPER for gen_pract_times()
 # Both t and m are schedule objects (start, end, sched)
@@ -379,7 +259,7 @@ def get_time(st_t, i):
 
 def missing_memb_practices(ex_schedule, m, MASTER):
     name = "Missing " + str(m) + " member(s)"
-    mod_sched = member_schedule(MASTER, ["free" for i in range(7)], name, False)
+    mod_sched = membexcel.member_schedule(MASTER, ["free" for i in range(7)], name, False)
 
     for d, day in enumerate(ex_schedule.array):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
         for i, timeslot in enumerate(day):
@@ -433,141 +313,72 @@ def print_others(members_arr):
 
 # This method does all of the heavy lifting: generates the practice schedule
 # IMPLEMENTATION 1: return times all members free
-def gen_pract_times(n, MASTER, members_in):
-    print("Generating full house practice times...")
+def gen_pract_times(n, MASTER, members_in, mn):
+    if not mn:
+        print("Generating full house practice times...")
+    else:
+        print("Generating best practice times (missing max", mn, "member(s))...")
+        practice = ex_schedule('9:00', '22:30', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
+
     membs = ""
     for memb in members_in:
         membs += memb.name + ", "
     print("Members: "+ membs[:-2])
 
-    text = input("View member schedules? [y/n, default is no] ")
-
     # See the schedules
+    text = input("View member schedules? [y/n, default is no] ")
     if text.lower() == "y":
         for m in members_in:
             m.visualize()
 
-    #  members - list of all members (as member_schedule objects)
     print("Schedule set from: " + str(MASTER.start) + " - " + str(MASTER.end))
 
-    text = input("Visualize comparison? [y/n] ")
-    if text.lower() == "y":     view_comp_sched = True
-    else:                       view_comp_sched = False
+    if not mn:
+        text = input("Visualize comparison? [y/n] ")
+        if text.lower() == "y":     view_comp_sched = True
+        else:                       view_comp_sched = False
 
-    ### IMPLEMENTATION 1: ###
-    ###  FULL HOUSE ONLY  ###
-    # Use compare_schedules helper to determine free times
-    mod = None
-    for i, m in enumerate(members_in):
-        if mod is None:
-            mod = compare_schedules(members_in[0], members_in[1])
-            if view_comp_sched:
-                mod.visualize()
-        else:
-            try:
-                mod = compare_schedules(mod, members_in[i+1])
+        print("### IMPLEMENTATION 1: ###\n###  FULL HOUSE ONLY  ###")
+        mod = None
+        for i, m in enumerate(members_in):
+            if mod is None:
+                mod = compare_schedules(members_in[0], members_in[1])
                 if view_comp_sched:
                     mod.visualize()
-            except: pass
-    mod.visualize()
-    print_others(members_in)
+            else:
+                try:
+                    mod = compare_schedules(mod, members_in[i+1])
+                    if view_comp_sched:
+                        mod.visualize()
+                except: pass
+        mod.visualize()
+        print_others(members_in)
 
-    get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
+        get_practice_range(n, mod, False, members_in)                                  # returns range of true (Sun --> Mon)
 
-    return mod
+        return mod
 
-# IMPLEMENTATION 2: test with more members, return "best" times (doesn't have to be all free) (kenny array idea)
-    '''
-    method for when it's okay to miss m number of members
-    new variable - max number of members missing
+    else:
+        print("#### IMPLEMENTATION 2: ####\n#  WITH N MISSING MEMBERS #")
+        for i, m in enumerate(members_in):
+            for d in range(7):                                  # d: days of the week (0-6)
+                for hr in range(len(practice.array[0])):        # hr: hours in the day
+                    practice.array[d][hr][i] = m.array[d][hr]
 
-    '''
-def gen_pract_times_miss(n, MASTER, members_in, mn):
-    print("Generating best practice times (missing max", mn, "member(s))...")
+            # print(practice.array[0]) # monday
+            # print(practice.array[0][0]) # monday at 9
+            # print(practice.array[0][0][i]) # monday at 9 for first member
+            # print(m.array[0]) # member monday
+            # print(m.array[0][0]) # member monday at 9
 
-    practice = ex_schedule('9:00', '22:30', len(members_in))      # practice is a ex_schedule object that takes total number of members for TF array
-    # mid-refactor - fix this
+        visualize_ex_week(practice, membs)
+        mod_practice = missing_memb_practices(practice, mn, MASTER)                  # converts ex_schedule to schedule with max_missing in consideration
+        mod_practice.visualize()
+        print_others(members_in)
 
-    membs = ""
-    for memb in members_in:
-        membs += memb.name + ", "
-    print("Members: "+ membs[:-2])
+        get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
+        return
 
-    #  members - list of all members (as member_schedule objects)
-    print("Schedule set from: " + str(MASTER.start) + " - " + str(MASTER.end))
-
-    print("Generating full house practice times...")
-    text = input("View member schedules? [y/n, default is no] ")
-
-    # See the schedules
-    if text.lower() == "y":
-        for m in members_in:
-            m.visualize()
-
-    #### IMPLEMENTATION 2: ####
-    #  WITH N MISSING MEMBERS #
-    for i, m in enumerate(members_in):
-        for d in range(7):                                  # d: days of the week (0-6)
-            for hr in range(len(practice.array[0])):        # hr: hours in the day
-                practice.array[d][hr][i] = m.array[d][hr]
-
-        # print(practice.array[0]) # monday
-        # print(practice.array[0][0]) # monday at 9
-        # print(practice.array[0][0][i]) # monday at 9 for first member
-        # print(m.array[0]) # member monday
-        # print(m.array[0][0]) # member monday at 9
-
-    visualize_ex_week(practice, membs)
-
-    mod_practice = missing_memb_practices(practice, mn, MASTER)                  # converts ex_schedule to schedule with max_missing in consideration
-    mod_practice.visualize()
-    print_others(members_in)
-
-    get_practice_range(n, mod_practice, practice, members_in)                    # returns range of true (Sun --> Mon)
-
-# Returns members_arr, a list of member_schedule objects
-def create_members_from_excel(MASTER, excel_path, test):
-    members_arr = []
-
-    # Read_excel: setting header=1 removes the title
-    xsheet = pd.read_excel(excel_path, header=1)
-    if test:    print(xsheet.head, xsheet.columns)
-
-    # For every member in the sheet, get avails and assign to Schedule object
-    for i, row in xsheet.iterrows():
-        week = []
-
-        # Check if sheet is set up properly: name must be at A2
-        try:    name = xsheet['NAME']
-        except:
-            print("Name is not properly formatted.")
-            exit(1)
-
-        # Getting avails from SUN - SAT (1 to 7)
-        for d in range(7):
-            weekday = xsheet.columns[d+1]         # SUN, MON, ...
-            if test:    print(weekday, end=": ")
-            avail = xsheet[weekday].iloc[i]
-            if test:    print(avail)
-            week.append(avail)
-
-        name = row[0]
-        other = xsheet[xsheet.columns[7+1]].iloc[i]
-
-        # If other was left blank
-        try:
-            if math.isnan(other):   other = '-'
-        except: pass
-
-        member = member_schedule(MASTER, week, name, other)
-
-        if test:
-            print(name, member.name)
-            member.visualize()
-
-        members_arr.append(member)
-
-    return members_arr
 
 def main():
     # Procressing input: excel file
@@ -589,7 +400,7 @@ def main():
 
     try:
         # Arg 3 is for testing, will print testing info
-        members_arr = create_members_from_excel(MASTER, path, False)
+        members_arr = membexcel.create_members_from_excel(MASTER, path, False)
         print("Finished reading member schedules from excel file.")
     except:
         print("Error reading excel file.")
@@ -598,11 +409,11 @@ def main():
     # Check: num missing members specified?
     try:
         max_missing = int(sys.argv[3])
-        gen_pract_times_miss(n, MASTER, members_arr, max_missing)
+        gen_pract_times(n, MASTER, members_arr, max_missing)
     except:
-        print("\nInvalid or misisng arg 3: number of members missing (arg 3) must be an integer.")
-        text = input("Default to 0 members missing? [y/n] ")
-        gen_pract_times(n, MASTER, members_arr) if text.lower() == "y" else exit(1)
+        print("\nInvalid or missing arg 3: number of members missing (arg 3) must be an integer.")
+        text = input("Default to 0 members missing? [enter any key to continue, or n to exit] ")
+        gen_pract_times(n, MASTER, members_arr, mn=None) if "n" not in text.lower() else exit(1)
     pass
 
 if __name__ == '__main__':
