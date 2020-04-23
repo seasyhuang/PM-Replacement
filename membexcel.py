@@ -45,6 +45,11 @@ def create_members_from_excel(MASTER, excel_path, test):
             member.visualize()
 
         members_arr.append(member)
+
+    print("MEMBERS:\t", end="")
+    for memb in members_arr:    print(memb.name, end=" ")
+    print()
+
     return members_arr
 
 

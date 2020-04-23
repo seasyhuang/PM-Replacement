@@ -31,4 +31,13 @@ answers to questions that i had:
 
 Refactor: make generate_practice_times_2() dry: [here](https://www.codementor.io/blog/pythonic-code-6yxqdoktzt) and [here](https://pythontips.com/2013/08/04/args-and-kwargs-in-python-explained/)
 
-- Schedule.py: visualizing the exsched - ctrl f "CURRENT" in main file and Schedule file
+- Schedule.py: clean compare_schedules and get_practice_range
+
+To clean:
+- get_practice_range --> think this can be moved into Ex/Schedule objects
+- suggest_prac
+- print_others (is this needed?)
+- missing_memb_practices
+- get_time (needed?)
+- whos_missing
+- IMPLEMENTATION 1 - instead of for loop comparing over and over, compare all at once
