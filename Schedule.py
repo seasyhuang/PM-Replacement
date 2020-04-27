@@ -70,6 +70,10 @@ class Schedule:
             print(times[t])
         print()
 
+    def print_other(self):
+        print(self.name + "\t ", self.other.replace("\n", "; "))
+
+
 class ExSchedule(Schedule):
     def __init__(self, start, end, num_members, list_membs):
         Schedule.__init__(self, start, end, "ExSched", None)

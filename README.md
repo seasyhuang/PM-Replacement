@@ -36,7 +36,6 @@ Refactor: make generate_practice_times_2() dry: [here](https://www.codementor.io
 To clean:
 - get_practice_range --> think this can be moved into Ex/Schedule objects
 - suggest_prac
-- print_others (is this needed?)
 - missing_memb_practices
 - get_time (needed?)
 - whos_missing

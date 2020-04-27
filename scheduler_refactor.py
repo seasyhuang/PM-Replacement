@@ -74,14 +74,6 @@ def missing_memb_practices(ex_schedule, m, MASTER):
                 mod_sched.array[d][i] = False
     return mod_sched
 
-# Helper for printing "other"
-def print_others(members_in):
-    print("######### EXCEPTIONS #########")
-    for m in members_in:
-        print(m.name + "\t ", m.other.replace("\n", "; "))
-    print()
-    return
-
 # Heavy lifting: generates the practice schedule
 def gen_pract_times(n, MASTER, members_in, num_missing):
     membs = ""
@@ -122,7 +114,7 @@ def gen_pract_times(n, MASTER, members_in, num_missing):
                         mod.visualize()
                 except: pass
         mod.visualize()
-        print_others(members_in)
+        for m in members_in: m.print_other()
         get_practice_range(n, mod, False, members_in)
 
         return mod
@@ -144,7 +136,7 @@ def gen_pract_times(n, MASTER, members_in, num_missing):
         # converts ex_schedule to schedule with num_missing in consideration
         simple_sched = missing_memb_practices(practice, num_missing, MASTER)
         simple_sched.visualize()
-        print_others(members_in)
+        for m in members_in: m.print_other()
         # returns range of true (Sun --> Mon)
         get_practice_range(n, mod_practice, practice, members_in)
         return
