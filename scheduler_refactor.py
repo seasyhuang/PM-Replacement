@@ -19,6 +19,8 @@ from Schedule import Schedule, ExSchedule
 MASTER = Schedule('9:00', '22:30', "Master", None)
 
 def whos_missing(mods, day, members):
+    print("WHO'S MISSING")
+    return
     missing = []
     m_time = []
 
@@ -75,7 +77,7 @@ def missing_memb_practices(ex_schedule, m, MASTER):
     return mod_sched
 
 # Heavy lifting: generates the practice schedule
-def gen_pract_times(n, MASTER, members_in, num_missing):
+def gen_pract_times(num_pract, MASTER, members_in, num_missing):
     membs = ""
     for memb in members_in:
         membs += memb.name + ", "
@@ -115,7 +117,7 @@ def gen_pract_times(n, MASTER, members_in, num_missing):
                 except: pass
         mod.visualize()
         for m in members_in: m.print_other()
-        get_practice_range(n, mod, False, members_in)
+        get_practice_range(num_pract, mod, False, members_in)
 
         return mod
 
@@ -138,7 +140,7 @@ def gen_pract_times(n, MASTER, members_in, num_missing):
         simple_sched.visualize()
         for m in members_in: m.print_other()
         # returns range of true (Sun --> Mon)
-        get_practice_range(n, mod_practice, practice, members_in)
+        get_practice_range(num_pract, mod_practice, practice, members_in)
         return
 
 # HELPER - gen_pract_times()
@@ -156,37 +158,45 @@ def compare_schedules(orig_sched, comp_sched):
 # HELPER - gen_pract_times()
 # returns all potential practice times in a range (per day)
 # mod is a schedule object
-def get_practice_range(n, mod, ex_pract, members_in):
+def get_practice_range(n, final_avails, ex_pract, members_in):
     skip = False
     r_comb = []
 
-    print("######### Weekly Schedule: #########")
-    for i, schedlist in enumerate(mod.array):               # schedlist is list of True, False
-        print(calendar.day_abbr[(i-1)%7], end=": ")         # for python's calendar function to work, need to shift all by 1
+    print("\n######### Weekly Schedule: #########")
+    for i, day_avails in enumerate(final_avails.array):     # day_avails is list of True, False
+        # print day of week (Sun: )
+        print(calendar.day_abbr[(i-1)%7], end=": ")         # shifted back by 1 to start on sunday
 
-        true_range = []                                     # saves indices
-        true_range_dt = []
-        switch = 0
-        for j, bool in enumerate(schedlist):
-            if bool is True and switch == 0:
-                # print(i)
+        print(day_avails)
+
+        true_ranges = []
+        switch = 0                                          # Track when T <-> F
+        for j, timeslot in enumerate(day_avails):           # Enumerate used to check last timeslot
+            if timeslot is True and switch == 0:
                 switch = 1
-                true_range.append(j)
-            if bool is False and switch == 1:
+                true_ranges.append(j)
+            if timeslot is False and switch == 1:
                 switch = 0
-                true_range.append(j)
-            elif j == len(schedlist)-1 and bool is True:    # for the last timeslot
-                true_range.append(j)
+                true_ranges.append(j)
+            elif j == len(day_avails)-1 and timeslot is True:    # Last timeslot check
+                true_ranges.append(j)
+        # Split true_ranges into lists of size 2
+        true_ranges = [true_ranges[x:x+2] for x in range(0, len(true_ranges), 2)]
+        print(true_ranges)
 
-        if len(true_range) == 1:
-            true_range.append(len(schedlist))
+        # TODO: check this
+        if len(true_ranges) == 1:
+            true_ranges.append(len(day_avails))
+
+        return
 
         # true_range stores the indices: use them to find associated datetime objects
-        st_t = mod.start
-        e_t = mod.end
+        st_t = final_avails.start
+        e_t = final_avails.end
         dtdt = datetime.datetime.combine(datetime.date(1,1,1), st_t)
 
-        for ind in true_range:
+        true_range_dt = []
+        for ind in true_ranges:
             diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
             comb = dtdt + diff_i                         # where dtdt is the starting date and time
             comb = comb.time()
@@ -232,7 +242,7 @@ def get_practice_range(n, mod, ex_pract, members_in):
 
         if(): print()
         elif ex_pract is not False:
-            print("| missing: ", whos_missing(schedlist, ex_pract.exarray[i], [m.name for m in members_in]))            # compare mod to ex_pract and see who's missing
+            print("| missing: ", whos_missing(day_avails, ex_pract.exarray[i], [m.name for m in members_in]))            # compare final_avails to ex_pract and see who's missing
         else: print()
 
     suggest_prac(n, r_comb)
@@ -290,7 +300,7 @@ def main():
 
     # Processing input: how many practices
     try:
-        n = int(sys.argv[2])
+        num_pract = int(sys.argv[2])
     except:
         print("Please specify number of desired practices in second argument.")
         exit(1)
@@ -305,11 +315,11 @@ def main():
     # Check: number of missing members specified?
     try:
         num_missing = int(sys.argv[3])
-        gen_pract_times(n, MASTER, members_in, num_missing)
+        gen_pract_times(num_pract, MASTER, members_in, num_missing)
     except:
         print("\nInvalid or missing arg 3: number of members missing (arg 3) must be an integer.")
         text = input("Default to 0 members missing? [enter any key to continue, or n to exit] ")
-        gen_pract_times(n, MASTER, members_in, num_missing=None) if "n" not in text.lower() else exit(1)
+        gen_pract_times(num_pract, MASTER, members_in, num_missing=None) if "n" not in text.lower() else exit(1)
     pass
 
 if __name__ == '__main__':

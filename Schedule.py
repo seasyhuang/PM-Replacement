@@ -32,6 +32,8 @@ class Schedule:
 
         return num_blocks
 
+    # def get_time
+
     def prep_visualize(self):
         # Banner
         print("\n######### VISUALIZING WEEK: " + self.name + " #########")
@@ -70,7 +72,7 @@ class Schedule:
             print(times[t])
         print()
 
-    def print_other(self):
+    def print_other(self):        
         print(self.name + "\t ", self.other.replace("\n", "; "))
 
 
