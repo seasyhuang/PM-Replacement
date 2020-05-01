@@ -57,8 +57,8 @@ def whos_missing(mods, day, members):
         return
 
 # mid-refactor: this is definitely not dry
-def get_time(st_t, i):
-    dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), st_t)
+def get_time(start_time, i):
+    dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), start_time)
     diff_i = datetime.timedelta(minutes=30*i)
     comb = dtdt + diff_i
     comb = comb.time()
@@ -164,49 +164,25 @@ def get_practice_range(n, final_avails, ex_pract, members_in):
 
     print("\n######### Weekly Schedule: #########")
     for i, day_avails in enumerate(final_avails.array):     # day_avails is list of True, False
-        # print day of week (Sun: )
-        print(calendar.day_abbr[(i-1)%7], end=": ")         # shifted back by 1 to start on sunday
+        # Prints the day of week ("Sun: "), shifted back by 1 to start on sunday
+        print(calendar.day_abbr[(i-1)%7], end=": ")
 
-        print(day_avails)
+        true_ranges = get_true_ranges(day_avails)
 
-        true_ranges = []
-        switch = 0                                          # Track when T <-> F
-        for j, timeslot in enumerate(day_avails):           # Enumerate used to check last timeslot
-            if timeslot is True and switch == 0:
-                switch = 1
-                true_ranges.append(j)
-            if timeslot is False and switch == 1:
-                switch = 0
-                true_ranges.append(j)
-            elif j == len(day_avails)-1 and timeslot is True:    # Last timeslot check
-                true_ranges.append(j)
-        # Split true_ranges into lists of size 2
-        true_ranges = [true_ranges[x:x+2] for x in range(0, len(true_ranges), 2)]
-        print(true_ranges)
-
-        # TODO: check this
-        if len(true_ranges) == 1:
-            true_ranges.append(len(day_avails))
-
-        return
-
-        # true_range stores the indices: use them to find associated datetime objects
-        st_t = final_avails.start
-        e_t = final_avails.end
-        dtdt = datetime.datetime.combine(datetime.date(1,1,1), st_t)
-
+        # Use indices in true_ranges to find associated datetime objects
+        # Store in true_range_dt
         true_range_dt = []
-        for ind in true_ranges:
-            diff_i = datetime.timedelta(minutes=30*ind)     # diff_i is the hrs/mins after start time
-            comb = dtdt + diff_i                         # where dtdt is the starting date and time
-            comb = comb.time()
-            true_range_dt.append(comb)
+        for ranges in true_ranges:
+            true_range_dt.append([get_time(final_avails.start, time) for time in ranges])
 
-        if not true_range_dt:                           # Catch for days with no practice times
+        # Catch: for days with no practice times
+        if not true_range_dt:
             print("None", end=" ")
             r_comb.append(None)
             skip = True
             pass
+
+        # todo: clean from here
 
         start = True                    # Boolean switch for start - end
         single_range = True             # Boolean switch for number of ranges
@@ -214,6 +190,7 @@ def get_practice_range(n, final_avails, ex_pract, members_in):
 
         t_r_comb = []
         t1 = []
+
 
         for idj, j in enumerate(true_range_dt):
             if single_range is True:
@@ -248,6 +225,28 @@ def get_practice_range(n, final_avails, ex_pract, members_in):
     suggest_prac(n, r_comb)
 
     return r_comb
+
+def get_true_ranges(day_avails):
+    true_ranges = []
+    switch = 0                                          # Track when T <-> F
+    for j, timeslot in enumerate(day_avails):           # Enumerate used to check last timeslot
+        if timeslot is True and switch == 0:
+            switch = 1
+            true_ranges.append(j)
+        if timeslot is False and switch == 1:
+            switch = 0
+            true_ranges.append(j)
+        elif j == len(day_avails)-1 and timeslot is True:    # Last timeslot check
+            true_ranges.append(j)
+    # Split true_ranges into lists of size 2
+    true_ranges = [true_ranges[x:x+2] for x in range(0, len(true_ranges), 2)]
+    print(true_ranges)
+
+    if len(true_ranges[0]) == 1:
+        true_ranges.append(len(day_avails))
+
+    return true_ranges
+
 
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
 def suggest_prac(n, r_comb):
