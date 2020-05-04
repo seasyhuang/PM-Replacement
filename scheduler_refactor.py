@@ -160,71 +160,52 @@ def compare_schedules(orig_sched, comp_sched):
 # mod is a schedule object
 def get_practice_range(n, final_avails, ex_pract, members_in):
     skip = False
-    r_comb = []
 
     print("\n######### Weekly Schedule: #########")
     for i, day_avails in enumerate(final_avails.array):     # day_avails is list of True, False
         # Prints the day of week ("Sun: "), shifted back by 1 to start on sunday
         print(calendar.day_abbr[(i-1)%7], end=": ")
 
-        true_ranges = get_true_ranges(day_avails)
+        try:
+            true_ranges = get_true_ranges(day_avails)
 
-        # Use indices in true_ranges to find associated datetime objects
-        # Store in true_range_dt
-        true_range_dt = []
-        for ranges in true_ranges:
-            true_range_dt.append([get_time(final_avails.start, time) for time in ranges])
+            # Use indices in true_ranges to find associated datetime objects
+            # Store in true_range_dt
+            true_range_dt = []
+            for ranges in true_ranges:
+                true_range_dt.append([get_time(final_avails.start, time) for time in ranges])
 
-        # Catch: for days with no practice times
-        if not true_range_dt:
-            print("None", end=" ")
-            r_comb.append(None)
-            skip = True
-            pass
-
-        # todo: clean from here
-
-        start = True                    # Boolean switch for start - end
-        single_range = True             # Boolean switch for number of ranges
-        if len(true_range_dt) > 2: single_range = False
-
-        t_r_comb = []
-        t1 = []
-
-
-        for idj, j in enumerate(true_range_dt):
-            if single_range is True:
-                t_r_comb = [[true_range_dt[0], true_range_dt[1]]]
-                print(str(true_range_dt[0].strftime("%H:%M")) + "-" + str(true_range_dt[1].strftime("%H:%M")), end=" ")
-                r_comb.append(t_r_comb)
-                break
-            else:
-                if start is True:
-                    print(str(j.strftime("%H:%M")), end="-")
-                    t1.append(j)
-                    start = False
+            for t_i, t_range in enumerate(true_range_dt):
+                start = t_range[0]
+                end = t_range[1]
+                print(start, end="-")
+                if t_i is not 0 and len(true_range_dt) > 1:
+                    print(end)
+                elif len(true_range_dt) is 1:
+                    print(end)
                 else:
-                    t1.append(j)
-                    t_r_comb.append(t1)
-                    t1 = []
+                    print(end, end=", ")
 
-                    if not (idj+1 == len(true_range_dt)):
-                        print(str(j.strftime("%H:%M")), end=", ")
-
-                    else:
-                        print(str(j.strftime("%H:%M")))
-                        r_comb.append(t_r_comb)
-
-                    start = True
+        except:
+            print("None")
+            pass
 
         if(): print()
         elif ex_pract is not False:
             print("| missing: ", whos_missing(day_avails, ex_pract.exarray[i], [m.name for m in members_in]))            # compare final_avails to ex_pract and see who's missing
         else: print()
 
+    # todo - forgot about this
     suggest_prac(n, r_comb)
 
     return r_comb
+
+def str_convert(str_time):
+    # Converts start/end time to datettime if entered as string
+    if isinstance(str_time, str):
+        str_time = datetime.datetime.strptime(str_time, '%H:%M')
+        return datetime.time(str_time.hour, str_time.minute)
+    return str_time
 
 def get_true_ranges(day_avails):
     true_ranges = []
@@ -240,7 +221,6 @@ def get_true_ranges(day_avails):
             true_ranges.append(j)
     # Split true_ranges into lists of size 2
     true_ranges = [true_ranges[x:x+2] for x in range(0, len(true_ranges), 2)]
-    print(true_ranges)
 
     if len(true_ranges[0]) == 1:
         true_ranges.append(len(day_avails))

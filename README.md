@@ -34,7 +34,7 @@ Refactor: make generate_practice_times_2() dry: [here](https://www.codementor.io
 - Schedule.py: clean compare_schedules and get_practice_range
 
 To clean:
-- get_practice_range --> clean (break into helpers)
+- get_practice_range --> clean (suggest_prac r_comb)
 - get_practice_range --> think this can be moved into Ex/Schedule objects
 - suggest_prac
 - missing_memb_practices
