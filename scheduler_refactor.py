@@ -180,14 +180,14 @@ def get_practice_range(n, final_avails, ex_pract, members_in):
                 end = t_range[1]
                 print(start, end="-")
                 if t_i is not 0 and len(true_range_dt) > 1:
-                    print(end)
+                    print(end, end="")
                 elif len(true_range_dt) is 1:
-                    print(end)
+                    print(end, end="")
                 else:
                     print(end, end=", ")
 
         except:
-            print("None")
+            print("None", end="")
             pass
 
         if(): print()
@@ -230,6 +230,21 @@ def get_true_ranges(day_avails):
 
 # uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
 def suggest_prac(n, r_comb):
+
+    print("here")
+    # [
+        # [
+            # [datetime.time(9, 0), datetime.time(15, 0)], [datetime.time(18, 0), datetime.time(22, 0)]],
+        # [
+            # [datetime.time(18, 0), datetime.time(22, 0)]
+        # ],
+        # [
+            # [datetime.time(17, 30), datetime.time(18, 0)]
+        # ], None, None,
+        # [
+            # [datetime.time(17, 30), datetime.time(22, 0)]
+        # ], None
+    # ]
 
     print()
     print("######### Suggested dates: #########")                   # 0 = sun
