@@ -18,63 +18,24 @@ from Schedule import Schedule, ExSchedule
 # Create grid/master schedule
 MASTER = Schedule('9:00', '22:30', "Master", None)
 
-def whos_missing(mods, day, members):
-    print("WHO'S MISSING")
-    return
-    missing = []
-    m_time = []
-
-    # print(day) # sunday (for i=0)
-    # print(day[0]) # sunday at 9
-    # print(day[0][m]) # sunday at 9 for first member
-
-    # who's missing, when
-    for t, time in enumerate(mods):                                             # compare schedlist[i = 0-26]
-        if time is True:
-            f = [i for i, bool in enumerate(day[t]) if bool==False]             # if FREE, check if day[0 to 26] FREE (f = [] if no False)
-            if f:                                                               # if NOT free, f gives to get m index
-                for m in f:
-                    m_time = [members[m], t]
-                    missing.append(m_time)
-    # print(missing)
-
-    # clean missing array
-    clean = []
-    if missing:
-        for m in missing:
-            if any(m[0] in n for n in clean):
-                clean[next((i for i, sublist in enumerate(clean) if m[0] in sublist))].append(m[1])
-            else:
-                clean.append(m)
-    # print(clean)
-
-    if clean:
-        s = ""
-        for m in clean:
-            s += m[0] + " (" + get_time(MASTER.start, m[1]) + "-" + get_time(MASTER.start, m[-1]+1) + "), "
-        return s[:-2]
-    else:
-        return
-
 # mid-refactor: this is definitely not dry
-def get_time(start_time, i):
-    dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), start_time)
+def get_time(i):
+    comb = get_time_raw(i)
+    return comb.strftime("%H:%M")          # appends without seconds
+
+def get_time_raw(i):
+    dtdt = datetime.datetime.combine(datetime.date(1, 1, 1), MASTER.start)
     diff_i = datetime.timedelta(minutes=30*i)
     comb = dtdt + diff_i
     comb = comb.time()
-    return comb.strftime("%H:%M")          # appends without seconds
+    return comb
 
-def missing_memb_practices(ex_schedule, m, MASTER):
-    name = "Missing " + str(m) + " member(s)"
-    mod_sched = membexcel.member_schedule(MASTER, ["free" for i in range(7)], name, False)
-
-    for d, day in enumerate(ex_schedule.exarray):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
-        for i, timeslot in enumerate(day):
-            if (np.sum(timeslot) >= (len(timeslot) - m)):                     # counts number of True
-                mod_sched.array[d][i] = True
-            else:
-                mod_sched.array[d][i] = False
-    return mod_sched
+def str_convert(str_time):
+    # Converts start/end time to datettime if entered as string
+    if isinstance(str_time, str):
+        str_time = datetime.datetime.strptime(str_time, '%H:%M')
+        return datetime.time(str_time.hour, str_time.minute)
+    return str_time
 
 # Heavy lifting: generates the practice schedule
 def gen_pract_times(num_pract, MASTER, members_in, num_missing):
@@ -122,7 +83,7 @@ def gen_pract_times(num_pract, MASTER, members_in, num_missing):
         return mod
 
     else:
-        print("#### IMPLEMENTATION 2: ####\n#  WITH N MISSING MEMBERS #")
+        print("\n\n\n#### IMPLEMENTATION 2: ####\n# WITH N MISSING MEMBERS  #")
         for i, m in enumerate(members_in):
             for d in range(7):                                      # d: days of the week (0-6)
                 for hr in range(len(practice.exarray[0])):          # hr: hours in the day
@@ -140,7 +101,7 @@ def gen_pract_times(num_pract, MASTER, members_in, num_missing):
         simple_sched.visualize()
         for m in members_in: m.print_other()
         # returns range of true (Sun --> Mon)
-        get_practice_range(num_pract, mod_practice, practice, members_in)
+        get_practice_range(num_pract, simple_sched, practice, members_in)
         return
 
 # HELPER - gen_pract_times()
@@ -157,23 +118,27 @@ def compare_schedules(orig_sched, comp_sched):
 
 # HELPER - gen_pract_times()
 # returns all potential practice times in a range (per day)
-# mod is a schedule object
 def get_practice_range(n, final_avails, ex_pract, members_in):
+    dt_ranges = []
     skip = False
 
     print("\n######### Weekly Schedule: #########")
     for i, day_avails in enumerate(final_avails.array):     # day_avails is list of True, False
+
         # Prints the day of week ("Sun: "), shifted back by 1 to start on sunday
         print(calendar.day_abbr[(i-1)%7], end=": ")
 
         try:
-            true_ranges = get_true_ranges(day_avails)
+            true_ranges = get_ranges(day_avails)
 
             # Use indices in true_ranges to find associated datetime objects
             # Store in true_range_dt
+            dt_range = []
             true_range_dt = []
             for ranges in true_ranges:
-                true_range_dt.append([get_time(final_avails.start, time) for time in ranges])
+                dt_range.append([get_time_raw(time) for time in ranges])
+                true_range_dt.append([get_time(time) for time in ranges])
+            dt_ranges.append(dt_range)
 
             for t_i, t_range in enumerate(true_range_dt):
                 start = t_range[0]
@@ -188,28 +153,21 @@ def get_practice_range(n, final_avails, ex_pract, members_in):
 
         except:
             print("None", end="")
+            dt_ranges.append(None)
             pass
 
         if(): print()
         elif ex_pract is not False:
-            print("| missing: ", whos_missing(day_avails, ex_pract.exarray[i], [m.name for m in members_in]))            # compare final_avails to ex_pract and see who's missing
+            print("\t| missing: ", whos_missing(day_avails, ex_pract.exarray[i], [m.name for m in members_in]))            # compare final_avails to ex_pract and see who's missing
         else: print()
 
-    # todo - forgot about this
-    suggest_prac(n, r_comb)
+    suggest_prac(n, dt_ranges)
+    return dt_ranges
 
-    return r_comb
-
-def str_convert(str_time):
-    # Converts start/end time to datettime if entered as string
-    if isinstance(str_time, str):
-        str_time = datetime.datetime.strptime(str_time, '%H:%M')
-        return datetime.time(str_time.hour, str_time.minute)
-    return str_time
-
-def get_true_ranges(day_avails):
+def get_ranges(day_avails):
     true_ranges = []
     switch = 0                                          # Track when T <-> F
+
     for j, timeslot in enumerate(day_avails):           # Enumerate used to check last timeslot
         if timeslot is True and switch == 0:
             switch = 1
@@ -224,56 +182,84 @@ def get_true_ranges(day_avails):
 
     if len(true_ranges[0]) == 1:
         true_ranges.append(len(day_avails))
-
     return true_ranges
 
-
-# uses get_practice_range output (r_comb) to suggest n practice dates and 1 filming date
-def suggest_prac(n, r_comb):
-
-    print("here")
-    # [
-        # [
-            # [datetime.time(9, 0), datetime.time(15, 0)], [datetime.time(18, 0), datetime.time(22, 0)]],
-        # [
-            # [datetime.time(18, 0), datetime.time(22, 0)]
-        # ],
-        # [
-            # [datetime.time(17, 30), datetime.time(18, 0)]
-        # ], None, None,
-        # [
-            # [datetime.time(17, 30), datetime.time(22, 0)]
-        # ], None
-    # ]
-
+# uses get_practice_range output (dt_ranges) to suggest n practice dates and 1 filming date
+def suggest_prac(n, dt_ranges):
     print()
-    print("######### Suggested dates: #########")                   # 0 = sun
+    print("######### Suggested dates: #########")
     weekday = datetime.date.today()
-    idx = (weekday.weekday() + 1) % 7           # need weekdays shifted by 1 (wait can we do this with iso or whatever it's called?)
+    idx = (weekday.weekday() + 1) % 7           # 0 = sun
     i = 1
-    n += 1                                      # this is for the filming
+    n += 1                                      # Index for the filming
 
-    # for loop n + 1 times
     while(n is not 0):
-        # get n index where r_comb isn't None
+        # get n index where dt_ranges isn't None
         # if (thing at idx+1 is not None:):
         j = (idx+i-1)%7
 
         # STORE practice dates + PRINT
-        if r_comb[j] is not None:
+        if dt_ranges[j] is not None:
             if n == 1:
                 print("\n######### FILMING: #########")
 
             print((weekday + datetime.timedelta(days=i-1)).strftime("%A, %B %d %Y"), end=": ")
-            for dt in r_comb[j]:
+            for dt in dt_ranges[j]:
                 print(dt[0].strftime("%H:%M"), end="-")
                 print(dt[1].strftime("%H:%M"), end=" ")
             print()
-                # print(r_comb[j])                # this is just showing what's in rcomb (datetime stuff)
+                # print(dt_ranges[j])                # this is just showing what's in rcomb (datetime stuff)
             n -= 1
         i += 1
 
     return weekday
+
+def missing_memb_practices(ex_schedule, m, MASTER):
+    name = "Missing " + str(m) + " member(s)"
+    mod_sched = membexcel.member_schedule(MASTER, ["free" for i in range(7)], name, False)
+
+    for d, day in enumerate(ex_schedule.exarray):       # d: 0-6, [a,....,a] (26 a, a=[T,T,T])
+        for i, timeslot in enumerate(day):
+            if (np.sum(timeslot) >= (len(timeslot) - m)):                     # counts number of True
+                mod_sched.array[d][i] = True
+            else:
+                mod_sched.array[d][i] = False
+    return mod_sched
+
+def whos_missing(mods, day, members):
+    missing = []
+    m_time = []
+
+    # print(day) # sunday (for i=0)
+    # print(day[0]) # sunday at 9
+    # print(day[0][m]) # sunday at 9 for first member
+
+    for t, time in enumerate(mods):                                             # compare schedlist[i = 0-26]
+        if time is True:
+            # if FREE, check if day[0 to 26] FREE (f = [] if no False)
+            f = [i for i, bool in enumerate(day[t]) if bool==False]
+            # if NOT free, f gives to get m index
+            if f:
+                for m in f:
+                    m_time = [members[m], t]
+                    missing.append(m_time)
+
+    # clean missing array
+    clean = []
+    if missing:
+        for m in missing:
+            if any(m[0] in n for n in clean):
+                clean[next((i for i, sublist in enumerate(clean) if m[0] in sublist))].append(m[1])
+            else:
+                clean.append(m)
+
+    if clean:
+        s = ""
+        for m in clean:
+            s += m[0] + " (" + get_time(m[1]) + "-" + get_time(m[-1]+1) + "), "
+        return s[:-2]
+    else:
+        return
 
 
 ###################################
