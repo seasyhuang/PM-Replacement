@@ -186,8 +186,7 @@ def get_ranges(day_avails):
 
 # uses get_practice_range output (dt_ranges) to suggest n practice dates and 1 filming date
 def suggest_prac(n, dt_ranges):
-    print()
-    print("######### Suggested dates: #########")
+    print("\n######### Suggested dates: #########")
     weekday = datetime.date.today()
     idx = (weekday.weekday() + 1) % 7           # 0 = sun
     i = 1
@@ -200,9 +199,7 @@ def suggest_prac(n, dt_ranges):
 
         # STORE practice dates + PRINT
         if dt_ranges[j] is not None:
-            if n == 1:
-                print("\n######### FILMING: #########")
-
+            if n == 1: print("\n######### FILMING: #########")
             print((weekday + datetime.timedelta(days=i-1)).strftime("%A, %B %d %Y"), end=": ")
             for dt in dt_ranges[j]:
                 print(dt[0].strftime("%H:%M"), end="-")
